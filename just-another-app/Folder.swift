@@ -47,4 +47,27 @@ final class Folder {
     var totalBookmarkCount: Int {
         bookmarks.count + children.reduce(0) { $0 + $1.totalBookmarkCount }
     }
+
+    var path: String {
+        if let parent = parent {
+            return "\(parent.path) › \(name)"
+        }
+        return name
+    }
+
+    static func hierarchicalSort(_ folders: [Folder]) -> [Folder] {
+        var result: [Folder] = []
+        let roots = folders.filter { $0.parent == nil }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        func addWithChildren(_ folder: Folder) {
+            result.append(folder)
+            let children = folder.children.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            for child in children {
+                addWithChildren(child)
+            }
+        }
+        for root in roots {
+            addWithChildren(root)
+        }
+        return result
+    }
 }

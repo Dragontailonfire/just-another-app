@@ -60,7 +60,7 @@ struct FolderDetailView: View {
                 }
             }
 
-            Section("Bookmarks (\(folder.bookmarks.count))") {
+            Section("\(folder.bookmarks.count) \(folder.bookmarks.count == 1 ? "Bookmark" : "Bookmarks")") {
                 if folder.bookmarks.isEmpty {
                     Text("No bookmarks in this folder")
                         .foregroundStyle(.secondary)
@@ -82,9 +82,6 @@ struct FolderDetailView: View {
             }
         }
         .navigationTitle(folder.name)
-        .navigationDestination(for: Folder.self) { child in
-            FolderDetailView(folder: child)
-        }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Menu {

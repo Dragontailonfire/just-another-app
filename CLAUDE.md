@@ -23,8 +23,8 @@ xcodebuild -project just-another-app.xcodeproj -scheme just-another-app -sdk iph
 ```
 
 **Requirements:**
-- Xcode 16.4+
-- iOS 18.5 deployment target
+- Xcode 26.0+
+- iOS 26.0 deployment target (Liquid Glass design)
 - Swift 5.0
 
 ## Key Conventions
@@ -35,6 +35,7 @@ xcodebuild -project just-another-app.xcodeproj -scheme just-another-app -sdk iph
 - Delete rules: `.nullify` for folder relationships (safe default)
 - All destructive actions require confirmation alerts
 - New `.swift` files in `just-another-app/` are auto-discovered by Xcode (`PBXFileSystemSynchronizedRootGroup`) — no pbxproj edits needed
+- Uses iOS 26 Liquid Glass: `.glassEffect()` on cards/badges/pickers, `GlassEffectContainer` for card grids. Standard SwiftUI components auto-adopt glass.
 
 ## Implementation Plan
 

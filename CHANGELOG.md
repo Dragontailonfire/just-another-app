@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-02-15
+
+### Added
+- **Folder child count** — folder rows now show immediate subfolder count alongside bookmark count
+- **Hierarchical folder paths** — folder pickers (filter, move, bookmark form, folder form) show full path (e.g. "Work › Projects") with parent-child grouping
+
+### Fixed
+- Fixed duplicate `navigationDestination` warning when navigating into child folders
+- Fixed pluralization ("1 bookmark" vs "2 bookmarks", "1 folder" vs "0 folders")
+- Liquid Glass polish: card selection checkmarks moved to left side, selection count in navigation title, tab bar hidden in select mode
+- Folder badge reverted from glass tint to opacity background for better text legibility
+- Native two-finger multi-select gesture in list view
+
+## [1.2.0] - 2026-02-15
+
+### Changed
+- **iOS 26 Liquid Glass design** — updated to iOS 26.0 with native glass materials
+- Bookmark cards now use `.glassEffect()` for blur, depth, and lighting
+- Folder form selection states (color and icon pickers) use glass highlights
+- Deployment target raised to iOS 26.0
+- Standard UI components (tabs, navigation, lists, forms) auto-adopt Liquid Glass
+- Native two-finger multi-select gesture in list view via `List(selection:)`
+- Multi-select support in card view with left-aligned checkmarks
+- Selection count displayed in navigation title instead of toolbar button
+- Tab bar hidden during select mode to prevent overlap with batch action buttons
+
+### Technical
+- Requires Xcode 26.0+
+- Card grid wrapped in `GlassEffectContainer` for proper glass compositing
+
 ## [1.1.1] - 2026-02-15
 
 ### Added

@@ -6,54 +6,39 @@
 //
 
 import SwiftUI
+import SwiftData
 import UIKit
 
 struct BookmarkListView: View {
     let bookmarks: [Bookmark]
-    var listState: BookmarkListState
+    @Bindable var listState: BookmarkListState
     var onSelect: (Bookmark) -> Void = { _ in }
     var onDelete: (Bookmark) -> Void = { _ in }
     var onOpenURL: ((URL) -> Void)?
 
     var body: some View {
-        List {
+        List(selection: listState.isSelectMode ? $listState.selectedBookmarkIDs : nil) {
             ForEach(bookmarks) { bookmark in
-                HStack {
-                    if listState.isSelectMode {
-                        Image(systemName: listState.selectedBookmarkIDs.contains(bookmark.persistentModelID) ? "checkmark.circle.fill" : "circle")
-                            .foregroundStyle(listState.selectedBookmarkIDs.contains(bookmark.persistentModelID) ? .blue : .secondary)
-                            .font(.title3)
-                    }
-                    BookmarkRowView(
-                        bookmark: bookmark,
-                        onToggleFavorite: {
-                            bookmark.isFavorite.toggle()
-                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                        },
-                        onDelete: { onDelete(bookmark) },
-                        onOpenURL: onOpenURL
-                    )
-                }
+                BookmarkRowView(
+                    bookmark: bookmark,
+                    onToggleFavorite: {
+                        bookmark.isFavorite.toggle()
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    },
+                    onDelete: { onDelete(bookmark) },
+                    onOpenURL: onOpenURL
+                )
+                .tag(bookmark.persistentModelID)
                 .contentShape(Rectangle())
                 .onTapGesture {
-                    if listState.isSelectMode {
-                        toggleSelection(bookmark)
-                    } else {
+                    if !listState.isSelectMode {
                         onSelect(bookmark)
                     }
                 }
             }
             .onMove(perform: listState.sortMode == .manual && !listState.isSelectMode ? moveBookmarks : nil)
         }
-    }
-
-    private func toggleSelection(_ bookmark: Bookmark) {
-        let id = bookmark.persistentModelID
-        if listState.selectedBookmarkIDs.contains(id) {
-            listState.selectedBookmarkIDs.remove(id)
-        } else {
-            listState.selectedBookmarkIDs.insert(id)
-        }
+        .environment(\.editMode, listState.isSelectMode ? .constant(.active) : .constant(.inactive))
     }
 
     private func moveBookmarks(from source: IndexSet, to destination: Int) {

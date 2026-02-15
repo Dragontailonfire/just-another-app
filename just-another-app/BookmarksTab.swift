@@ -15,6 +15,10 @@ struct BookmarksTab: View {
     @Query(sort: \Folder.name) private var folders: [Folder]
 
     @State private var listState = BookmarkListState()
+
+    private var hierarchicalFolders: [Folder] {
+        Folder.hierarchicalSort(folders)
+    }
     @State private var showingAddForm = false
     @State private var bookmarkToEdit: Bookmark?
     @State private var bookmarkToDelete: Bookmark?
@@ -91,14 +95,10 @@ struct BookmarksTab: View {
                 }
             }
             .animation(.default, value: listState.viewMode)
-            .navigationTitle("Bookmarks")
+            .navigationTitle(listState.isSelectMode ? "\(listState.selectedBookmarkIDs.count) Selected" : "Bookmarks")
             .searchable(text: $listState.searchText, prompt: "Search bookmarks")
             .toolbar {
                 if listState.isSelectMode {
-                    ToolbarItemGroup(placement: .topBarLeading) {
-                        Text("\(listState.selectedBookmarkIDs.count) selected")
-                            .font(.subheadline)
-                    }
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         Button("Done") {
                             listState.isSelectMode = false
@@ -149,6 +149,7 @@ struct BookmarksTab: View {
                     }
                 }
             }
+            .toolbarVisibility(listState.isSelectMode ? .hidden : .automatic, for: .tabBar)
             .sheet(item: $urlToOpen) { item in
                 SafariView(url: item.url)
                     .ignoresSafeArea()
@@ -166,7 +167,7 @@ struct BookmarksTab: View {
                             batchMove(to: nil)
                             showingMoveFolder = false
                         }
-                        ForEach(folders) { folder in
+                        ForEach(hierarchicalFolders) { folder in
                             Button {
                                 batchMove(to: folder)
                                 showingMoveFolder = false
@@ -174,7 +175,7 @@ struct BookmarksTab: View {
                                 HStack {
                                     Image(systemName: folder.iconName)
                                         .foregroundStyle(FolderAppearance.color(for: folder.colorName))
-                                    Text(folder.name)
+                                    Text(folder.path)
                                 }
                             }
                         }
@@ -211,12 +212,31 @@ struct BookmarksTab: View {
     // MARK: - Card Grid
 
     private var cardGrid: some View {
+        GlassEffectContainer {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible(minimum: 100)), GridItem(.flexible(minimum: 100))], spacing: 8) {
                 ForEach(filteredAndSorted) { bookmark in
-                    BookmarkCardView(bookmark: bookmark, onOpenURL: { urlToOpen = IdentifiableURL(url: $0) })
-                        .contentShape(Rectangle())
-                        .onTapGesture { bookmarkToEdit = bookmark }
+                    HStack(spacing: 8) {
+                        if listState.isSelectMode {
+                            Image(systemName: listState.selectedBookmarkIDs.contains(bookmark.persistentModelID) ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(listState.selectedBookmarkIDs.contains(bookmark.persistentModelID) ? .blue : .secondary)
+                                .font(.title3)
+                        }
+                        BookmarkCardView(bookmark: bookmark, onOpenURL: { urlToOpen = IdentifiableURL(url: $0) })
+                    }
+                    .contentShape(Rectangle())
+                        .onTapGesture {
+                            if listState.isSelectMode {
+                                let id = bookmark.persistentModelID
+                                if listState.selectedBookmarkIDs.contains(id) {
+                                    listState.selectedBookmarkIDs.remove(id)
+                                } else {
+                                    listState.selectedBookmarkIDs.insert(id)
+                                }
+                            } else {
+                                bookmarkToEdit = bookmark
+                            }
+                        }
                         .contextMenu {
                             Button {
                                 bookmark.isFavorite.toggle()
@@ -243,6 +263,7 @@ struct BookmarksTab: View {
                 }
             }
             .padding()
+        }
         }
     }
 
@@ -289,12 +310,12 @@ struct BookmarksTab: View {
                     listState.filterFolder = nil
                 }
                 Divider()
-                ForEach(folders) { folder in
+                ForEach(hierarchicalFolders) { folder in
                     Button {
                         listState.filterFolder = folder
                     } label: {
                         HStack {
-                            Text(folder.name)
+                            Text(folder.path)
                             if listState.filterFolder?.persistentModelID == folder.persistentModelID {
                                 Image(systemName: "checkmark")
                             }

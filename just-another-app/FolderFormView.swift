@@ -41,6 +41,7 @@ struct FolderFormView: View {
                                 Circle()
                                     .fill(item.color)
                                     .frame(width: 32, height: 32)
+                                    .glassEffect(selectedColor == item.name ? .regular : .identity)
                                     .overlay {
                                         if selectedColor == item.name {
                                             Image(systemName: "checkmark")
@@ -60,11 +61,10 @@ struct FolderFormView: View {
                             Image(systemName: icon)
                                 .font(.title2)
                                 .frame(width: 44, height: 44)
-                                .background(
+                                .glassEffect(
                                     selectedIcon == icon
-                                        ? FolderAppearance.color(for: selectedColor).opacity(0.2)
-                                        : Color.clear,
-                                    in: RoundedRectangle(cornerRadius: 8)
+                                        ? .regular.tint(FolderAppearance.color(for: selectedColor))
+                                        : .identity
                                 )
                                 .foregroundStyle(
                                     selectedIcon == icon
@@ -90,14 +90,14 @@ struct FolderFormView: View {
                             }
                         }
                     }
-                    ForEach(availableParents) { folder in
+                    ForEach(Folder.hierarchicalSort(availableParents)) { folder in
                         Button {
                             selectedParent = folder
                         } label: {
                             HStack {
                                 Image(systemName: folder.iconName)
                                     .foregroundStyle(FolderAppearance.color(for: folder.colorName))
-                                Text(folder.name)
+                                Text(folder.path)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if selectedParent?.persistentModelID == folder.persistentModelID {

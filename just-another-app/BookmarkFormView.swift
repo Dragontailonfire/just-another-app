@@ -82,14 +82,14 @@ struct BookmarkFormView: View {
                             }
                         }
                     }
-                    ForEach(folders) { folder in
+                    ForEach(Folder.hierarchicalSort(folders)) { folder in
                         Button {
                             selectedFolder = folder
                         } label: {
                             HStack {
                                 Image(systemName: folder.iconName)
                                     .foregroundStyle(FolderAppearance.color(for: folder.colorName))
-                                Text(folder.name)
+                                Text(folder.path)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if selectedFolder?.persistentModelID == folder.persistentModelID {

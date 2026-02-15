@@ -4,8 +4,8 @@ A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organ
 
 ## Requirements
 
-- Xcode 16.4+
-- iOS 18.5 deployment target
+- Xcode 26.0+
+- iOS 26.0 deployment target (Liquid Glass design)
 - Swift 5.0
 - No external dependencies or package managers
 
@@ -185,8 +185,8 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### Versioning
 
-- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.1.1`).
-- `CURRENT_PROJECT_VERSION` tracks the build number (currently `3`).
+- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.2.1`).
+- `CURRENT_PROJECT_VERSION` tracks the build number (currently `5`).
 - `CHANGELOG.md` documents all changes per version.
 - `ChangelogView.swift` mirrors the changelog in-app, shown from Settings > "What's New".
 

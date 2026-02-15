@@ -15,6 +15,35 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.2.1",
+                        date: "February 15, 2026",
+                        items: [
+                            "Folder child count on folder rows",
+                            "Hierarchical folder paths in all pickers",
+                            "Fixed duplicate navigation destination warning",
+                            "Fixed singular/plural count labels",
+                            "Liquid Glass selection and layout polish",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
+                        version: "1.2.0",
+                        date: "February 15, 2026",
+                        items: [
+                            "iOS 26 Liquid Glass design",
+                            "Glass effect on bookmark cards",
+                            "Glass selection highlights in folder form",
+                            "Native two-finger multi-select in list view",
+                            "Multi-select support in card view",
+                            "Deployment target raised to iOS 26.0",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.1.1",
                         date: "February 15, 2026",
                         items: [

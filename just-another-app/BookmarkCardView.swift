@@ -43,7 +43,6 @@ struct BookmarkCardView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 10))
-        .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
+        .glassEffect(.regular, in: .rect(cornerRadius: 12))
     }
 }
