@@ -145,6 +145,7 @@ struct FolderFormView: View {
         } else {
             let folder = Folder(name: trimmedName, colorName: selectedColor, iconName: selectedIcon, parent: selectedParent)
             modelContext.insert(folder)
+            selectedParent?.children.append(folder)
         }
         dismiss()
     }

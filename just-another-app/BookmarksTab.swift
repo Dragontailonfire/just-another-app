@@ -212,7 +212,7 @@ struct BookmarksTab: View {
 
     private var cardGrid: some View {
         ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 300))], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.flexible(minimum: 100)), GridItem(.flexible(minimum: 100))], spacing: 8) {
                 ForEach(filteredAndSorted) { bookmark in
                     BookmarkCardView(bookmark: bookmark, onOpenURL: { urlToOpen = IdentifiableURL(url: $0) })
                         .contentShape(Rectangle())
@@ -272,6 +272,16 @@ struct BookmarksTab: View {
 
     private var filterMenu: some View {
         Menu {
+            if activeFilterCount > 0 {
+                Button(role: .destructive) {
+                    listState.filterFavoritesOnly = false
+                    listState.filterFolder = nil
+                } label: {
+                    Label("Clear Filters", systemImage: "xmark.circle")
+                }
+                Divider()
+            }
+
             Toggle("Favorites Only", isOn: $listState.filterFavoritesOnly)
 
             Menu("Folder") {

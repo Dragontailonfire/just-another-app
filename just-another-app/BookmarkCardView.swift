@@ -12,50 +12,38 @@ struct BookmarkCardView: View {
     var onOpenURL: ((URL) -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
                 Text(bookmark.name)
-                    .font(.headline)
+                    .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                 Spacer()
                 if bookmark.isFavorite {
                     Image(systemName: "star.fill")
                         .foregroundStyle(.yellow)
-                        .font(.caption)
+                        .font(.caption2)
                 }
             }
-            if !bookmark.descriptionText.isEmpty {
-                Text(bookmark.descriptionText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
-            HStack {
-                Text(bookmark.url)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
-                Spacer()
-                Text(bookmark.createdDate, format: .relative(presentation: .named))
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
+            Text(bookmark.url)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
             if let folder = bookmark.folder {
-                HStack(spacing: 4) {
+                HStack(spacing: 2) {
                     Image(systemName: folder.iconName)
-                        .font(.caption2)
+                        .font(.system(size: 8))
                     Text(folder.name)
-                        .font(.caption2)
+                        .font(.system(size: 9))
                 }
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 1)
                 .foregroundStyle(FolderAppearance.color(for: folder.colorName))
                 .background(FolderAppearance.color(for: folder.colorName).opacity(0.15), in: Capsule())
             }
         }
-        .padding()
+        .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
+        .background(.background, in: RoundedRectangle(cornerRadius: 10))
+        .shadow(color: .black.opacity(0.06), radius: 3, y: 1)
     }
 }

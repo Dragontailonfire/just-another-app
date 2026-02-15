@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-02-15
+
+### Added
+- **Compact card view** — tile layout now uses a 2-column grid with smaller cards for more content at a glance
+- **Clear Filters** — quick-reset button in filter menu to remove all active filters in one tap
+- **Edit swipe on subfolders** — swipe-to-edit and context menu now available on folders inside folder detail view
+
+### Fixed
+- Fixed subfolder name showing as "Child" instead of actual name (explicitly sync parent-child relationship on save)
+- Fixed NaN CoreGraphics error in card grid layout
+
 ## [1.1.0] - 2026-02-15
 
 ### Added

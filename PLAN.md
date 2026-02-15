@@ -47,6 +47,7 @@ A personal bookmarking app to save and organize web links with folders, search, 
 | 10 | Folder colors & icons, Spotlight indexing (Core Spotlight), CSV format updated | ✅ Done |
 | 11 | Batch operations (multi-select, batch favorite/move/delete), CSVService tests, schema migration recovery | ✅ Done |
 | 12 | Versioning (v1.1.0), in-app changelog, About section in Settings, https:// pre-fill, Picker→Button fix | ✅ Done |
+| 13 | v1.1.1 — Compact card view, clear filters, subfolder edit swipe, folder name bug fix, NaN fix | ✅ Done |
 
 ---
 
@@ -63,3 +64,4 @@ A personal bookmarking app to save and organize web links with folders, search, 
 | 2026-02-14 | Phase 10 completed. Folder colors & icons (colorName/iconName on Folder, FolderAppearance.swift, pickers in FolderFormView, colored badges). Spotlight indexing via SpotlightService.swift (Core Spotlight). CSV format updated with colorName/iconName columns. |
 | 2026-02-14 | Phase 11 completed. Batch operations (select mode in BookmarkListState, multi-select UI in BookmarkListView, batch favorite/move/delete in BookmarksTab). CSVService tests added. Schema migration recovery in just_another_appApp.swift. |
 | 2026-02-15 | Phase 12 completed. Versioning: bumped to v1.1.0 (build 2). Created ChangelogView.swift for in-app "What's New". Added About section to SettingsTab (version display + changelog sheet). Pre-filled https:// in BookmarkFormView URL field. Fixed Picker→Button for folder selection (resolved AnyHashable2 duplicate key crash). Created CHANGELOG.md. Added MIT LICENSE. |
+| 2026-02-15 | Phase 13 completed. v1.1.1 (build 3). Compact 2-column card view. Clear Filters button. Edit swipe on subfolders in FolderDetailView. Fixed subfolder name bug (explicit parent-child sync). Fixed NaN CoreGraphics error in card grid. |

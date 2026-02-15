@@ -15,6 +15,20 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.1.1",
+                        date: "February 15, 2026",
+                        items: [
+                            "Compact 2-column card/tile view",
+                            "Clear Filters button in filter menu",
+                            "Edit swipe and context menu on subfolders",
+                            "Fixed subfolder name bug when creating inside a folder",
+                            "Fixed NaN CoreGraphics error in card grid",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.1.0",
                         date: "February 14, 2026",
                         items: [

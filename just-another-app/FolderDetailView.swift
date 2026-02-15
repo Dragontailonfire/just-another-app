@@ -18,6 +18,7 @@ struct FolderDetailView: View {
     @State private var bookmarkToEdit: Bookmark?
     @State private var bookmarkToDelete: Bookmark?
     @State private var subfolderToDelete: Folder?
+    @State private var subfolderToEdit: Folder?
     @State private var urlToOpen: IdentifiableURL?
 
     var body: some View {
@@ -29,6 +30,26 @@ struct FolderDetailView: View {
                             FolderRowView(folder: child)
                         }
                         .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                subfolderToDelete = child
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                subfolderToEdit = child
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.orange)
+                        }
+                        .contextMenu {
+                            Button {
+                                subfolderToEdit = child
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
                             Button(role: .destructive) {
                                 subfolderToDelete = child
                             } label: {
@@ -91,6 +112,9 @@ struct FolderDetailView: View {
         }
         .sheet(isPresented: $showingAddSubfolder) {
             FolderFormView(parentFolder: folder)
+        }
+        .sheet(item: $subfolderToEdit) { subfolder in
+            FolderFormView(folderToEdit: subfolder)
         }
         .sheet(item: $bookmarkToEdit) { bookmark in
             BookmarkFormView(bookmarkToEdit: bookmark)

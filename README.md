@@ -185,8 +185,8 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### Versioning
 
-- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.1.0`).
-- `CURRENT_PROJECT_VERSION` tracks the build number (currently `2`).
+- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.1.1`).
+- `CURRENT_PROJECT_VERSION` tracks the build number (currently `3`).
 - `CHANGELOG.md` documents all changes per version.
 - `ChangelogView.swift` mirrors the changelog in-app, shown from Settings > "What's New".
 
