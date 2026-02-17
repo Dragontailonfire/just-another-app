@@ -1,6 +1,6 @@
 # Just Another App
 
-A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organize, and manage web links with folders, search, sorting, filtering, card/list views, CSV import/export, in-app browsing, Spotlight indexing, batch operations, favicons, Share Extension, home screen widget, dead link detection, and quick actions.
+A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organize, and manage web links with folders, search, sorting, filtering, card/list views, CSV import/export, in-app browsing, Spotlight indexing, batch operations, favicons, Share Extension, home screen widget, dead link detection, quick actions, and privacy controls.
 
 ## Requirements
 
@@ -63,6 +63,8 @@ just-another-app/
 │   ├── SharedModelContainer.swift     # App Group shared ModelContainer for extensions
 │   ├── FaviconService.swift           # Favicon fetching via LPMetadataProvider + Google API
 │   ├── LinkCheckerService.swift       # Dead link detection via HEAD requests
+│   ├── URLValidator.swift             # Centralized HTTP(S) URL validation
+│   ├── ConcurrencyLimiter.swift       # Actor-based semaphore for bounded concurrency
 │   │
 │   └── Assets.xcassets/               # Asset catalog
 │
@@ -234,6 +236,7 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 - Indexes bookmarks and folders in Core Spotlight (`CSSearchableItem`) for system-wide search.
 - Automatically updates the index when bookmarks or folders are created, modified, or deleted.
+- **Privacy toggle** in Settings — disable Spotlight indexing to keep bookmarks private. Toggling off wipes the index; toggling on re-indexes all bookmarks.
 
 ### Schema Migration Recovery
 
@@ -241,10 +244,21 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### Versioning
 
-- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.3.0`).
-- `CURRENT_PROJECT_VERSION` tracks the build number (currently `6`).
+- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.4.0`).
+- `CURRENT_PROJECT_VERSION` tracks the build number (currently `7`).
 - `CHANGELOG.md` documents all changes per version.
 - `ChangelogView.swift` mirrors the changelog in-app, shown from Settings > "What's New".
+
+## Privacy
+
+- **Local-only storage** — all bookmark data is stored on-device using SwiftData. No cloud sync, no analytics, no telemetry.
+- **Spotlight opt-out** — Settings > Spotlight > toggle off to prevent bookmark names and URLs from appearing in iOS system search. Toggling off immediately deletes the Spotlight index.
+- **No external network calls** except:
+  - **Google Favicon API** (`google.com/s2/favicons`) — fetches website icons by domain. Only the domain name is sent; no bookmark names, descriptions, or user data.
+  - **LPMetadataProvider** (Apple) — fetches page titles and icons when adding bookmarks.
+  - **HEAD requests** — link checking validates bookmark URLs via HTTP HEAD requests.
+- **CSV injection protection** — exported CSV files sanitize cells to prevent formula injection when opened in spreadsheet applications.
+- **URL validation** — only HTTP and HTTPS URLs are accepted. Non-HTTP(S) URLs (e.g., `javascript:`, `data:`, `file:`) are rejected on import and in forms.
 
 ## License
 
@@ -259,7 +273,8 @@ Unit tests in `just-another-appTests/just_another_appTests.swift` using Swift Te
 | `BookmarkTests` | `bookmarkInitDefaults`, `bookmarkInitWithAllFields`, `bookmarkInsertAndFetch`, `bookmarkDelete`, `bookmarkFavoriteToggle`, `bookmarkUpdateFields` | Bookmark model CRUD, defaults, field updates |
 | `FolderTests` | `folderInitDefaults`, `folderBookmarkCount`, `folderTotalBookmarkCountWithNesting`, `folderInsertAndFetch`, `folderDeleteNullifiesBookmarks`, `folderParentChildRelationship` | Folder model, nesting, counts, nullify delete rule |
 | `BookmarkListStateTests` | `defaultState`, `viewModeToggle`, `sortModeCases`, `sortModeRawValues` | State object defaults, enum cases |
-| `CSVServiceTests` | CSV export/import round-trip, field escaping, section parsing | CSVService export/import logic, RFC 4180 compliance |
+| `CSVServiceTests` | CSV export/import round-trip, field escaping, section parsing, injection protection, invalid URL skipping | CSVService export/import logic, RFC 4180 compliance, CSV injection, URL validation |
+| `URLValidatorTests` | `validHTTPSURL`, `validHTTPURL`, `invalidSchemes`, `invalidURLs`, `canonicalize` | URL validation and canonicalization |
 
 Tests use in-memory `ModelContainer` via `makeContainer()` helper. Tests requiring `ModelContext` are annotated `@MainActor`.
 

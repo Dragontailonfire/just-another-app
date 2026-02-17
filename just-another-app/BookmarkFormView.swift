@@ -32,13 +32,7 @@ struct BookmarkFormView: View {
     private var isEditing: Bool { bookmarkToEdit != nil }
 
     private var isValidURL: Bool {
-        guard let parsed = URL(string: url),
-              let scheme = parsed.scheme?.lowercased(),
-              (scheme == "http" || scheme == "https"),
-              parsed.host != nil else {
-            return false
-        }
-        return true
+        URLValidator.isValid(url)
     }
 
     var body: some View {
@@ -121,6 +115,7 @@ struct BookmarkFormView: View {
                 }
             }
             .onAppear(perform: populateIfEditing)
+            .onDisappear { metadataTask?.cancel() }
             .alert("Duplicate URL", isPresented: $showingDuplicateAlert) {
                 Button("Save Anyway") { insertNewBookmark() }
                 Button("Cancel", role: .cancel) {}
@@ -185,13 +180,12 @@ struct BookmarkFormView: View {
             try? await Task.sleep(for: .milliseconds(600))
             guard !Task.isCancelled else { return }
             guard !urlString.isEmpty, name.isEmpty,
-                  let parsed = URL(string: urlString),
-                  let scheme = parsed.scheme?.lowercased(),
-                  (scheme == "http" || scheme == "https"),
-                  parsed.host != nil else { return }
+                  URLValidator.isValid(urlString),
+                  let parsed = URL(string: urlString) else { return }
 
             await MainActor.run { isFetchingMetadata = true }
             let provider = LPMetadataProvider()
+            provider.timeout = 10
             do {
                 let metadata = try await provider.startFetchingMetadata(for: parsed)
                 guard !Task.isCancelled else { return }

@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-02-17
+
+### Added
+- **Spotlight Privacy Toggle** — opt out of Spotlight indexing in Settings to keep bookmarks private
+- **URL Validation on Import** — CSV import skips rows with non-HTTP(S) URLs (e.g., `javascript:`, `ftp://`) and reports skipped count
+- **CSV Injection Protection** — exported CSV cells starting with `=`, `+`, `-`, `@` are prefixed to prevent spreadsheet formula injection (OWASP)
+- **Import Stats** — import now reports folder/bookmark/skipped counts
+- **File Size Cap** — CSV import rejects files larger than 5 MB
+- **Duplicate Detection in Share Extension** — warns when sharing a URL that already exists
+- **URLValidator utility** — centralized HTTP(S) URL validation used across app and extensions
+- **ConcurrencyLimiter** — actor-based semaphore for bounded concurrent network requests
+
+### Changed
+- **Atomic CSV Import** — all rows are parsed and validated before any data is deleted, preventing data loss on parse errors
+- **Network Hardening** — favicon and link checker services capped at 6 concurrent requests; ephemeral URLSession for link checks (no cookies/credentials leaked); redirect guard blocks non-HTTP(S) redirects
+- **Metadata Timeouts** — LPMetadataProvider timeout set to 10 seconds in bookmark form, share extension, and favicon service
+- **Cancel on Dismiss** — metadata fetch task cancelled when bookmark form is dismissed
+- **Google Favicon URL** — built with URLComponents instead of string interpolation
+- **Share Extension** — Save button gated on URL validity; shows error for non-HTTP(S) URLs
+
+### Technical
+- New files: `URLValidator.swift`, `ConcurrencyLimiter.swift`
+- `CSVService.importCSV` now returns `ImportStats` (folders, bookmarks, skipped)
+- `SpotlightService.isEnabled` reads `UserDefaults` for `spotlightIndexingEnabled`
+- `SpotlightService.deleteAll()` wipes the Spotlight index
+- `LinkCheckerService` uses ephemeral `URLSession` with `SafeRedirectDelegate`
+- `URLValidator.swift` added to BookmarkShareExtension target membership
+
 ## [1.3.0] - 2026-02-16
 
 ### Added

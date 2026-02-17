@@ -24,6 +24,7 @@ struct SettingsTab: View {
     @State private var showingChangelog = false
     @State private var isFetchingFavicons = false
     @State private var isCheckingLinks = false
+    @AppStorage("spotlightIndexingEnabled") private var spotlightIndexingEnabled = true
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
@@ -90,16 +91,26 @@ struct SettingsTab: View {
                 }
 
                 Section {
+                    Toggle("Spotlight Indexing", isOn: $spotlightIndexingEnabled)
+                        .onChange(of: spotlightIndexingEnabled) { _, enabled in
+                            if enabled {
+                                SpotlightService.reindexAll(bookmarks: bookmarks)
+                            } else {
+                                SpotlightService.deleteAll()
+                            }
+                        }
+
                     Button("Rebuild Spotlight Index") {
                         SpotlightService.reindexAll(bookmarks: bookmarks)
                         alertTitle = "Spotlight Updated"
                         alertMessage = "All bookmarks have been re-indexed."
                         showingAlert = true
                     }
+                    .disabled(!spotlightIndexingEnabled)
                 } header: {
                     Text("Spotlight")
                 } footer: {
-                    Text("Re-indexes all bookmarks for iOS Spotlight search.")
+                    Text("Bookmark names and URLs appear in iOS Spotlight search. Disable to keep bookmarks private.")
                 }
 
                 Section("About") {
@@ -164,12 +175,27 @@ struct SettingsTab: View {
             }
             defer { url.stopAccessingSecurityScopedResource() }
 
+            // File size check
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            if let fileSize = attributes[.size] as? UInt64, fileSize > CSVService.maxImportFileSize {
+                alertTitle = "Import Failed"
+                alertMessage = "File exceeds the 5 MB import limit."
+                showingAlert = true
+                return
+            }
+
             let csvString = try String(contentsOf: url, encoding: .utf8)
-            try CSVService.importCSV(from: csvString, context: modelContext)
-            SpotlightService.reindexAll(bookmarks: bookmarks)
+            let stats = try CSVService.importCSV(from: csvString, context: modelContext)
+            if SpotlightService.isEnabled {
+                SpotlightService.reindexAll(bookmarks: bookmarks)
+            }
 
             alertTitle = "Import Successful"
-            alertMessage = "All data has been imported."
+            var message = "Imported \(stats.folders) folder\(stats.folders == 1 ? "" : "s") and \(stats.bookmarks) bookmark\(stats.bookmarks == 1 ? "" : "s")."
+            if stats.skipped > 0 {
+                message += " Skipped \(stats.skipped) invalid URL\(stats.skipped == 1 ? "" : "s")."
+            }
+            alertMessage = message
             showingAlert = true
         } catch {
             alertTitle = "Import Failed"

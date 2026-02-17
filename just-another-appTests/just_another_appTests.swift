@@ -345,4 +345,87 @@ struct CSVServiceTests {
             try CSVService.importCSV(from: "just some text", context: context)
         }
     }
+
+    @Test func escapeFieldCSVInjection() {
+        // Dangerous prefixes should be quoted with single-quote prefix
+        #expect(CSVService.escapeField("=SUM(A1:A2)") == "\"'=SUM(A1:A2)\"")
+        #expect(CSVService.escapeField("+cmd") == "\"'+cmd\"")
+        #expect(CSVService.escapeField("-something") == "\"'-something\"")
+        #expect(CSVService.escapeField("@import") == "\"'@import\"")
+    }
+
+    @Test func csvInjectionRoundTrip() {
+        // Export → parse → strip should give back clean original value
+        let dangerous = "=SUM(A1:A2)"
+        let escaped = CSVService.escapeField(dangerous)
+        let parsed = CSVService.parseCSVRow(escaped)
+        let cleaned = CSVService.stripInjectionPrefix(parsed[0])
+        #expect(cleaned == dangerous)
+    }
+
+    @Test func stripInjectionPrefixNormal() {
+        // Normal strings shouldn't be modified
+        #expect(CSVService.stripInjectionPrefix("hello") == "hello")
+        #expect(CSVService.stripInjectionPrefix("") == "")
+        #expect(CSVService.stripInjectionPrefix("'normal") == "'normal")
+    }
+
+    @Test @MainActor func importSkipsInvalidURLs() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let csv = """
+        #FOLDERS
+        name,sortOrder,parentPath,colorName,iconName
+
+        #BOOKMARKS
+        url,name,descriptionText,createdDate,isFavorite,sortOrder,folderPath
+        https://valid.com,Valid,desc,2026-02-14T10:00:00Z,false,0,
+        javascript:alert(1),Evil,desc,2026-02-14T10:00:00Z,false,1,
+        ftp://files.com/path,FTP,desc,2026-02-14T10:00:00Z,false,2,
+        """
+
+        let stats = try CSVService.importCSV(from: csv, context: context)
+        #expect(stats.bookmarks == 1)
+        #expect(stats.skipped == 2)
+
+        let bookmarks = try context.fetch(FetchDescriptor<Bookmark>())
+        #expect(bookmarks.count == 1)
+        #expect(bookmarks.first?.url == "https://valid.com")
+    }
+}
+
+// MARK: - URLValidator Tests
+
+@Suite
+struct URLValidatorTests {
+
+    @Test func validHTTPSURL() {
+        #expect(URLValidator.isValid("https://example.com") == true)
+        #expect(URLValidator.isValid("https://example.com/path") == true)
+        #expect(URLValidator.isValid("https://sub.example.com") == true)
+    }
+
+    @Test func validHTTPURL() {
+        #expect(URLValidator.isValid("http://example.com") == true)
+    }
+
+    @Test func invalidSchemes() {
+        #expect(URLValidator.isValid("ftp://example.com") == false)
+        #expect(URLValidator.isValid("javascript:alert(1)") == false)
+        #expect(URLValidator.isValid("data:text/html,<h1>hi</h1>") == false)
+        #expect(URLValidator.isValid("file:///etc/passwd") == false)
+    }
+
+    @Test func invalidURLs() {
+        #expect(URLValidator.isValid("") == false)
+        #expect(URLValidator.isValid("not a url") == false)
+        #expect(URLValidator.isValid("https://") == false)
+    }
+
+    @Test func canonicalize() {
+        #expect(URLValidator.canonicalize("  HTTPS://EXAMPLE.COM/  ") == "https://example.com")
+        #expect(URLValidator.canonicalize("HTTP://Example.Com/path") == "http://example.com/path")
+        #expect(URLValidator.canonicalize("https://example.com/") == "https://example.com")
+    }
 }

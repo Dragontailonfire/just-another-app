@@ -15,19 +15,16 @@ struct ShareBookmarkView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Folder.name) private var folders: [Folder]
+    @Query private var allBookmarks: [Bookmark]
 
     @State private var name: String = ""
     @State private var selectedFolder: Folder?
     @State private var isFetchingMetadata = false
     @State private var fetchedFaviconData: Data?
+    @State private var showingDuplicateAlert = false
 
     private var isValidURL: Bool {
-        guard let scheme = url.scheme?.lowercased(),
-              (scheme == "http" || scheme == "https"),
-              url.host != nil else {
-            return false
-        }
-        return true
+        URLValidator.isValid(url.absoluteString)
     }
 
     var body: some View {
@@ -37,6 +34,11 @@ struct ShareBookmarkView: View {
                     Text(url.absoluteString)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if !isValidURL {
+                        Text("Only HTTP and HTTPS URLs are supported.")
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    }
                 }
 
                 Section("Details") {
@@ -90,16 +92,31 @@ struct ShareBookmarkView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
-                        .disabled(name.isEmpty)
+                        .disabled(name.isEmpty || !isValidURL)
                 }
             }
             .onAppear {
                 fetchMetadata()
             }
+            .alert("Duplicate URL", isPresented: $showingDuplicateAlert) {
+                Button("Save Anyway") { insertBookmark() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("A bookmark with this URL already exists.")
+            }
         }
     }
 
     private func save() {
+        let trimmedURL = url.absoluteString.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if allBookmarks.contains(where: { $0.url.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == trimmedURL }) {
+            showingDuplicateAlert = true
+            return
+        }
+        insertBookmark()
+    }
+
+    private func insertBookmark() {
         let bookmark = Bookmark(
             url: url.absoluteString,
             name: name,
@@ -116,6 +133,7 @@ struct ShareBookmarkView: View {
         isFetchingMetadata = true
         Task {
             let provider = LPMetadataProvider()
+            provider.timeout = 10
             do {
                 let metadata = try await provider.startFetchingMetadata(for: url)
                 await MainActor.run {

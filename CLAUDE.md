@@ -61,9 +61,11 @@ See `PLAN.md` for the living implementation plan, phase status tracking, and cha
 | `FolderFormView.swift` | Add/edit form with parent picker, color and icon pickers |
 | `FolderAppearance.swift` | Color/icon palette definitions for folder customization |
 | `SafariView.swift` | UIViewControllerRepresentable wrapping SFSafariViewController for in-app browsing |
-| `SpotlightService.swift` | Core Spotlight indexing for bookmarks and folders |
-| `SettingsTab.swift` | Settings tab — CSV export/import, stats, fetch favicons, check links, Spotlight rebuild, changelog |
-| `CSVService.swift` | CSV engine — section-based format, RFC 4180 escaping, colorName/iconName columns |
+| `SpotlightService.swift` | Core Spotlight indexing with privacy toggle (isEnabled guard, deleteAll) |
+| `SettingsTab.swift` | Settings tab — CSV export/import, stats, fetch favicons, check links, Spotlight toggle, changelog |
+| `CSVService.swift` | CSV engine — section-based format, RFC 4180 escaping, injection protection, URL validation on import, atomic import |
+| `URLValidator.swift` | Centralized HTTP(S) URL validation + canonicalization |
+| `ConcurrencyLimiter.swift` | Actor-based semaphore for bounded concurrent network requests |
 | `ChangelogView.swift` | In-app "What's New" sheet showing version history |
 | `SharedModelContainer.swift` | App Group shared ModelContainer for main app + extensions |
 | `FaviconService.swift` | Favicon fetching via LPMetadataProvider + Google fallback |

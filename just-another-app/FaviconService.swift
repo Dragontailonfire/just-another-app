@@ -30,6 +30,7 @@ enum FaviconService {
 
     private static func fetchViaLinkPresentation(url: URL) async -> Data? {
         let provider = LPMetadataProvider()
+        provider.timeout = 10
         do {
             let metadata = try await provider.startFetchingMetadata(for: url)
             guard let iconProvider = metadata.iconProvider else { return nil }
@@ -54,9 +55,15 @@ enum FaviconService {
     }
 
     private static func fetchViaGoogle(host: String) async -> Data? {
-        guard let url = URL(string: "https://www.google.com/s2/favicons?domain=\(host)&sz=64") else {
-            return nil
-        }
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "www.google.com"
+        components.path = "/s2/favicons"
+        components.queryItems = [
+            URLQueryItem(name: "domain", value: host),
+            URLQueryItem(name: "sz", value: "64")
+        ]
+        guard let url = components.url else { return nil }
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse,
@@ -72,9 +79,12 @@ enum FaviconService {
 
     static func fetchMissingFavicons(bookmarks: [Bookmark]) async -> Int {
         var fetched = 0
+        let limiter = ConcurrencyLimiter(limit: 6)
         await withTaskGroup(of: (Bookmark, Data?).self) { group in
             for bookmark in bookmarks where bookmark.faviconData == nil {
                 group.addTask {
+                    await limiter.acquire()
+                    defer { Task { await limiter.release() } }
                     let data = await fetchFavicon(for: bookmark.url)
                     return (bookmark, data)
                 }

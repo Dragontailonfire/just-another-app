@@ -15,6 +15,24 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.4.0",
+                        date: "February 17, 2026",
+                        items: [
+                            "Spotlight Privacy Toggle — disable Spotlight indexing in Settings to keep bookmarks private",
+                            "CSV Injection Protection — exported cells are sanitized to prevent spreadsheet formula injection",
+                            "URL Validation on Import — non-HTTP(S) URLs are skipped with a count shown after import",
+                            "Atomic CSV Import — all rows validated before deleting data, preventing loss on errors",
+                            "File Size Cap — CSV import rejects files larger than 5 MB",
+                            "Import Stats — shows folder, bookmark, and skipped counts after import",
+                            "Network Hardening — capped concurrent requests, ephemeral sessions, redirect guards, timeouts",
+                            "Duplicate Detection in Share Extension — warns when URL already exists",
+                            "Cancel on Dismiss — metadata fetch cancelled when bookmark form is closed",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.3.0",
                         date: "February 16, 2026",
                         items: [

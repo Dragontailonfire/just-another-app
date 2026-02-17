@@ -11,7 +11,13 @@ import SwiftData
 enum SpotlightService {
     private static let domainIdentifier = "tech.prana.just-another-app.bookmarks"
 
+    static var isEnabled: Bool {
+        UserDefaults.standard.object(forKey: "spotlightIndexingEnabled") as? Bool ?? true
+    }
+
     static func index(bookmark: Bookmark) {
+        guard isEnabled else { return }
+
         let attributeSet = CSSearchableItemAttributeSet(contentType: .url)
         attributeSet.title = bookmark.name
         attributeSet.contentDescription = bookmark.descriptionText
@@ -36,6 +42,7 @@ enum SpotlightService {
 
     static func reindexAll(bookmarks: [Bookmark]) {
         CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: [domainIdentifier]) { _ in
+            guard isEnabled else { return }
             let items = bookmarks.map { bookmark -> CSSearchableItem in
                 let attributeSet = CSSearchableItemAttributeSet(contentType: .url)
                 attributeSet.title = bookmark.name
@@ -53,5 +60,9 @@ enum SpotlightService {
             }
             CSSearchableIndex.default().indexSearchableItems(items)
         }
+    }
+
+    static func deleteAll() {
+        CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: [domainIdentifier])
     }
 }
