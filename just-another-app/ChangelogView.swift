@@ -15,6 +15,27 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.3.0",
+                        date: "February 16, 2026",
+                        items: [
+                            "Share Extension — save bookmarks from Safari and other apps",
+                            "Favicons — bookmark icons fetched automatically from websites",
+                            "Home Screen Widget — quick access to bookmarks (small & medium)",
+                            "Dead Link Detection — find broken URLs with one tap",
+                            "Quick Actions — long-press app icon to add bookmark or view favorites",
+                            "Fetch Missing Favicons button in Settings",
+                            "Check All Links button in Settings",
+                            "Dead Links Only filter in Bookmarks tab",
+                            "App Group shared container for extension data access",
+                            "Larger rounded-rect favicons for compact, modern look",
+                            "Streamlined rows — dates moved to edit form for cleaner layout",
+                            "Inline folder badge next to URL",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.2.1",
                         date: "February 15, 2026",
                         items: [

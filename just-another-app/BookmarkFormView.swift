@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import LinkPresentation
+import WidgetKit
 
 struct BookmarkFormView: View {
     @Environment(\.modelContext) private var modelContext
@@ -23,6 +24,7 @@ struct BookmarkFormView: View {
     @State private var isFetchingMetadata = false
     @State private var metadataTask: Task<Void, Never>?
     @State private var showingDuplicateAlert = false
+    @State private var fetchedFaviconData: Data?
 
     @Query(sort: \Folder.name) private var folders: [Folder]
     @Query private var allBookmarks: [Bookmark]
@@ -67,6 +69,12 @@ struct BookmarkFormView: View {
                     }
                     TextField("Description", text: $descriptionText, axis: .vertical)
                         .lineLimit(3...6)
+                    if isEditing, let bookmark = bookmarkToEdit {
+                        LabeledContent("Created") {
+                            Text(bookmark.createdDate, format: .dateTime.month(.wide).day().year().hour().minute())
+                        }
+                        .foregroundStyle(.secondary)
+                    }
                 }
                 Section("Folder") {
                     Button {
@@ -128,6 +136,7 @@ struct BookmarkFormView: View {
             name = bookmark.name
             descriptionText = bookmark.descriptionText
             selectedFolder = bookmark.folder
+            fetchedFaviconData = bookmark.faviconData
         } else {
             selectedFolder = defaultFolder
         }
@@ -139,7 +148,11 @@ struct BookmarkFormView: View {
             bookmark.name = name
             bookmark.descriptionText = descriptionText
             bookmark.folder = selectedFolder
+            if let faviconData = fetchedFaviconData {
+                bookmark.faviconData = faviconData
+            }
             SpotlightService.index(bookmark: bookmark)
+            WidgetCenter.shared.reloadAllTimelines()
             dismiss()
         } else {
             // Duplicate detection
@@ -157,10 +170,12 @@ struct BookmarkFormView: View {
             url: url,
             name: name,
             descriptionText: descriptionText,
-            folder: selectedFolder
+            folder: selectedFolder,
+            faviconData: fetchedFaviconData
         )
         modelContext.insert(bookmark)
         SpotlightService.index(bookmark: bookmark)
+        WidgetCenter.shared.reloadAllTimelines()
         dismiss()
     }
 
@@ -180,9 +195,27 @@ struct BookmarkFormView: View {
             do {
                 let metadata = try await provider.startFetchingMetadata(for: parsed)
                 guard !Task.isCancelled else { return }
+
+                // Extract favicon from metadata
+                var iconData: Data?
+                if let iconProvider = metadata.iconProvider {
+                    iconData = try? await withCheckedThrowingContinuation { continuation in
+                        iconProvider.loadDataRepresentation(for: .image) { data, error in
+                            if let data = data {
+                                continuation.resume(returning: data)
+                            } else {
+                                continuation.resume(throwing: error ?? URLError(.cannotDecodeContentData))
+                            }
+                        }
+                    }
+                }
+
                 await MainActor.run {
                     if name.isEmpty, let title = metadata.title {
                         name = title
+                    }
+                    if let iconData = iconData {
+                        fetchedFaviconData = iconData
                     }
                     isFetchingMetadata = false
                 }

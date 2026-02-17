@@ -1,6 +1,6 @@
 # Just Another App
 
-A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organize, and manage web links with folders, search, sorting, filtering, card/list views, CSV import/export, in-app browsing, Spotlight indexing, and batch operations.
+A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organize, and manage web links with folders, search, sorting, filtering, card/list views, CSV import/export, in-app browsing, Spotlight indexing, batch operations, favicons, Share Extension, home screen widget, dead link detection, and quick actions.
 
 ## Requirements
 
@@ -60,8 +60,21 @@ just-another-app/
 │   ├── SpotlightService.swift         # Core Spotlight indexing for bookmarks and folders
 │   ├── FolderAppearance.swift         # Color/icon palette definitions for folder customization
 │   ├── ChangelogView.swift            # In-app "What's New" version history sheet
+│   ├── SharedModelContainer.swift     # App Group shared ModelContainer for extensions
+│   ├── FaviconService.swift           # Favicon fetching via LPMetadataProvider + Google API
+│   ├── LinkCheckerService.swift       # Dead link detection via HEAD requests
 │   │
 │   └── Assets.xcassets/               # Asset catalog
+│
+├── BookmarkShareExtension/            # Share Extension target
+│   ├── ShareViewController.swift      # Extension entry point, URL extraction
+│   ├── ShareBookmarkView.swift        # SwiftUI form for saving shared URLs
+│   ├── BookmarkShareExtension.entitlements
+│   └── Info.plist                     # Extension activation rules
+│
+├── BookmarkWidget/                    # Widget Extension target
+│   ├── BookmarkWidget.swift           # Timeline provider, small/medium widget views
+│   └── BookmarkWidget.entitlements
 │
 ├── just-another-appTests/             # Unit tests (Swift Testing framework)
 │   └── just_another_appTests.swift    # BookmarkTests, FolderTests, BookmarkListStateTests, CSVServiceTests
@@ -89,6 +102,9 @@ just-another-app/
 | `createdDate` | `Date` | `.now` | |
 | `isFavorite` | `Bool` | `false` | |
 | `sortOrder` | `Int` | `0` | Used for manual drag-to-reorder |
+| `faviconData` | `Data?` | `nil` | Stored PNG favicon |
+| `linkStatus` | `String` | `"unknown"` | "unknown", "valid", or "dead" |
+| `lastCheckedDate` | `Date?` | `nil` | When link was last validated |
 | `folder` | `Folder?` | `nil` | Inverse of `Folder.bookmarks` |
 
 ### Folder (`Folder.swift`)
@@ -115,9 +131,9 @@ just-another-app/
 - **Search:** `searchable` modifier filtering by name, URL, and description (case-insensitive, in-memory).
 - **Sort:** Toolbar menu — Newest First, Oldest First, A-Z, Z-A, Manual. Manual mode enables drag-to-reorder via `.onMove`.
 - **Filter:** Toolbar menu — Favorites Only toggle, Folder picker (with active filter count badge on icon).
-- **Bookmark row:** Name, URL, relative date ("2 hours ago"), colored folder badge capsule. Swipe right to favorite (yellow tint), swipe left to delete. Context menu: favorite, open in-app browser, delete. Supports `onOpenURL` for deep linking.
-- **Bookmark card:** Headline, description (2-line limit), URL + relative date, colored folder badge. Rounded rectangle with shadow. Context menu same as row. Supports `onOpenURL` for deep linking.
-- **Add/Edit:** Sheet form (`BookmarkFormView`) with URL field (pre-filled with `https://`, keyboard type `.URL`, HTTP/HTTPS validation with inline error), name (auto-filled from URL via `LPMetadataProvider`), description (multi-line), folder picker (Button-based selection). Duplicate URL detection warns when a URL already exists. Same form serves both add and edit.
+- **Bookmark row:** Rounded-rect favicon (32px), name, URL with inline colored folder badge capsule. Swipe right to favorite (yellow tint), swipe left to delete. Context menu: favorite, open in-app browser, delete. Supports `onOpenURL` for deep linking.
+- **Bookmark card:** Rounded-rect favicon (20px), name, URL, colored folder badge. Glass effect card. Context menu same as row. Supports `onOpenURL` for deep linking.
+- **Add/Edit:** Sheet form (`BookmarkFormView`) with URL field (pre-filled with `https://`, keyboard type `.URL`, HTTP/HTTPS validation with inline error), name (auto-filled from URL via `LPMetadataProvider`), description (multi-line), folder picker (Button-based selection). Duplicate URL detection warns when a URL already exists. Same form serves both add and edit. Edit mode shows created date.
 - **Delete:** All deletes show a confirmation alert before proceeding.
 - **Batch operations:** Select mode enables multi-select across bookmarks. Batch actions: toggle favorite, move to folder, delete selected. Managed via `BookmarkListState`.
 
@@ -161,10 +177,50 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 - Import: deletes all existing data, creates folders top-down by path depth, then creates bookmarks with folder lookups
 - Export: folders flattened parent-first via recursive traversal, bookmarks as-is
 
+### Favicons (`FaviconService.swift`)
+
+- Bookmark favicons are fetched automatically when adding a new bookmark.
+- Uses `LPMetadataProvider.iconProvider` (same as name auto-fill) with fallback to Google's favicon API.
+- Favicons stored as PNG data on the `Bookmark` model (`faviconData: Data?`).
+- Displayed as rounded-rect icons in `BookmarkRowView` (32x32) and `BookmarkCardView` (20x20).
+- Fallback: `globe` SF Symbol with `tertiarySystemFill` background when no favicon is available.
+- Settings > "Fetch Missing Favicons" batch-fetches icons for all bookmarks without one.
+
+### Share Extension (`BookmarkShareExtension/`)
+
+- Save bookmarks directly from Safari, Chrome, or any app with a share sheet.
+- Extracts shared URL from `NSExtensionItem` attachments.
+- SwiftUI form with auto-filled name (via `LPMetadataProvider`), read-only URL, and hierarchical folder picker.
+- Uses `SharedModelContainer` for App Group data access.
+- **Manual Xcode step required:** Create Share Extension target (File > New > Target > Share Extension, name: `BookmarkShareExtension`, bundle ID: `tech.prana.just-another-app.ShareExtension`). Add shared source files to target membership: `Bookmark.swift`, `Folder.swift`, `FolderAppearance.swift`, `SharedModelContainer.swift`, `FaviconService.swift`.
+
+### Home Screen Widget (`BookmarkWidget/`)
+
+- Small widget: vertical list of 4 bookmarks with favicons.
+- Medium widget: 2-column grid of 6 bookmarks with favicons.
+- Favorites shown first, then recent bookmarks.
+- Tap a bookmark to open its URL directly.
+- Timeline refreshes hourly; also refreshes when bookmarks are saved in the app.
+- **Manual Xcode step required:** Create Widget Extension target (File > New > Target > Widget Extension, name: `BookmarkWidget`, bundle ID: `tech.prana.just-another-app.Widget`, uncheck "Include Configuration App Intent"). Add shared source files to target membership: `Bookmark.swift`, `Folder.swift`, `SharedModelContainer.swift`.
+
+### Dead Link Detection (`LinkCheckerService.swift`)
+
+- Settings > "Check All Links" validates all bookmark URLs via HEAD requests (10s timeout).
+- HTTP 200-399 = valid, everything else = dead.
+- Dead bookmarks show a red warning triangle icon in list and card views.
+- "Dead Links Only" filter toggle in Bookmarks tab filter menu.
+- Results stored on `Bookmark` model: `linkStatus` ("unknown"/"valid"/"dead") and `lastCheckedDate`.
+
+### Quick Actions
+
+- Long-press the app icon on the home screen for shortcuts.
+- "Add Bookmark" — opens the bookmark form immediately.
+- "View Favorites" — switches to the Bookmarks tab.
+
 ### UX Polish
 
 - **Delete confirmations:** All destructive actions across all tabs show an alert with item name before proceeding.
-- **Relative dates:** Bookmark rows and cards show relative timestamps via `.formatted(.relative(presentation: .named))`.
+- **Created date in edit form:** Bookmark edit form displays the creation date. Dates are not shown in list/card views for a compact layout.
 - **URL validation:** Bookmark form validates HTTP/HTTPS scheme and host presence. Shows inline red error text. Save disabled when invalid.
 - **Haptic feedback:** Medium impact on favorite toggle, warning notification on confirmed deletes. Uses `UIImpactFeedbackGenerator` and `UINotificationFeedbackGenerator`.
 - **Animated transitions:** View mode toggle uses opacity crossfade via `.animation(.default, value:)` and `.transition(.opacity)`.
@@ -185,8 +241,8 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### Versioning
 
-- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.2.1`).
-- `CURRENT_PROJECT_VERSION` tracks the build number (currently `5`).
+- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.3.0`).
+- `CURRENT_PROJECT_VERSION` tracks the build number (currently `6`).
 - `CHANGELOG.md` documents all changes per version.
 - `ChangelogView.swift` mirrors the changelog in-app, shown from Settings > "What's New".
 

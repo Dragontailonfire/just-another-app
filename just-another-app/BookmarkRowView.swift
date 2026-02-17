@@ -14,36 +14,43 @@ struct BookmarkRowView: View {
     var onOpenURL: ((URL) -> Void)?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(bookmark.name)
-                    .font(.body)
-                    .lineLimit(1)
-                Spacer()
-                if bookmark.isFavorite {
-                    Image(systemName: "star.fill")
-                        .foregroundStyle(.yellow)
+        HStack(spacing: 10) {
+            faviconView(size: 32)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(bookmark.name)
+                        .font(.body)
+                        .lineLimit(1)
+                    Spacer()
+                    if bookmark.linkStatus == "dead" {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                            .font(.caption)
+                    }
+                    if bookmark.isFavorite {
+                        Image(systemName: "star.fill")
+                            .foregroundStyle(.yellow)
+                            .font(.caption)
+                    }
+                }
+                HStack(spacing: 6) {
+                    Text(bookmark.url)
                         .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    if let folder = bookmark.folder {
+                        HStack(spacing: 3) {
+                            Image(systemName: folder.iconName)
+                                .font(.system(size: 9))
+                            Text(folder.name)
+                                .font(.caption2)
+                        }
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .foregroundStyle(FolderAppearance.color(for: folder.colorName))
+                        .background(FolderAppearance.color(for: folder.colorName).opacity(0.15), in: Capsule())
+                    }
                 }
-            }
-            Text(bookmark.url)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Text(bookmark.createdDate, format: .relative(presentation: .named))
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-            if let folder = bookmark.folder {
-                HStack(spacing: 4) {
-                    Image(systemName: folder.iconName)
-                        .font(.caption2)
-                    Text(folder.name)
-                        .font(.caption2)
-                }
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .foregroundStyle(FolderAppearance.color(for: folder.colorName))
-                .background(FolderAppearance.color(for: folder.colorName).opacity(0.15), in: Capsule())
             }
         }
         .contextMenu {
@@ -78,6 +85,23 @@ struct BookmarkRowView: View {
                 )
             }
             .tint(.yellow)
+        }
+    }
+
+    @ViewBuilder
+    private func faviconView(size: CGFloat) -> some View {
+        if let data = bookmark.faviconData, let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: size, height: size)
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.22))
+        } else {
+            Image(systemName: "globe")
+                .font(.system(size: size * 0.45))
+                .frame(width: size, height: size)
+                .foregroundStyle(.secondary)
+                .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: size * 0.22))
         }
     }
 }

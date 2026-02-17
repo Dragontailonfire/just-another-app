@@ -13,11 +13,17 @@ struct BookmarkCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
+                faviconView(size: 20)
                 Text(bookmark.name)
                     .font(.subheadline.weight(.medium))
                     .lineLimit(1)
                 Spacer()
+                if bookmark.linkStatus == "dead" {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                        .font(.caption2)
+                }
                 if bookmark.isFavorite {
                     Image(systemName: "star.fill")
                         .foregroundStyle(.yellow)
@@ -44,5 +50,22 @@ struct BookmarkCardView: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: .rect(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private func faviconView(size: CGFloat) -> some View {
+        if let data = bookmark.faviconData, let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFill()
+                .frame(width: size, height: size)
+                .clipShape(RoundedRectangle(cornerRadius: size * 0.22))
+        } else {
+            Image(systemName: "globe")
+                .font(.system(size: size * 0.45))
+                .frame(width: size, height: size)
+                .foregroundStyle(.secondary)
+                .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: size * 0.22))
+        }
     }
 }

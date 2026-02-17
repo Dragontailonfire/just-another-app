@@ -14,7 +14,12 @@ struct BookmarksTab: View {
     @Query private var allBookmarks: [Bookmark]
     @Query(sort: \Folder.name) private var folders: [Folder]
 
+    @Binding var filterFavoritesOnAppear: Bool
     @State private var listState = BookmarkListState()
+
+    init(filterFavoritesOnAppear: Binding<Bool> = .constant(false)) {
+        _filterFavoritesOnAppear = filterFavoritesOnAppear
+    }
 
     private var hierarchicalFolders: [Folder] {
         Folder.hierarchicalSort(folders)
@@ -47,6 +52,11 @@ struct BookmarksTab: View {
         // Filter: folder
         if let folder = listState.filterFolder {
             result = result.filter { $0.folder?.persistentModelID == folder.persistentModelID }
+        }
+
+        // Filter: dead links
+        if listState.filterDeadLinksOnly {
+            result = result.filter { $0.linkStatus == "dead" }
         }
 
         // Sort
@@ -190,6 +200,12 @@ struct BookmarksTab: View {
                 }
                 .presentationDetents([.medium])
             }
+            .onChange(of: filterFavoritesOnAppear) { _, newValue in
+                if newValue {
+                    listState.filterFavoritesOnly = true
+                    filterFavoritesOnAppear = false
+                }
+            }
             .alert("Delete Bookmark?", isPresented: Binding(
                 get: { bookmarkToDelete != nil },
                 set: { if !$0 { bookmarkToDelete = nil } }
@@ -297,6 +313,7 @@ struct BookmarksTab: View {
                 Button(role: .destructive) {
                     listState.filterFavoritesOnly = false
                     listState.filterFolder = nil
+                    listState.filterDeadLinksOnly = false
                 } label: {
                     Label("Clear Filters", systemImage: "xmark.circle")
                 }
@@ -304,6 +321,7 @@ struct BookmarksTab: View {
             }
 
             Toggle("Favorites Only", isOn: $listState.filterFavoritesOnly)
+            Toggle("Dead Links Only", isOn: $listState.filterDeadLinksOnly)
 
             Menu("Folder") {
                 Button("All Folders") {
@@ -329,7 +347,9 @@ struct BookmarksTab: View {
     }
 
     private var activeFilterCount: Int {
-        (listState.filterFavoritesOnly ? 1 : 0) + (listState.filterFolder != nil ? 1 : 0)
+        (listState.filterFavoritesOnly ? 1 : 0) +
+        (listState.filterFolder != nil ? 1 : 0) +
+        (listState.filterDeadLinksOnly ? 1 : 0)
     }
 
     // MARK: - Batch Operations

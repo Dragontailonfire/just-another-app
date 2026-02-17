@@ -8,37 +8,91 @@
 import SwiftUI
 import SwiftData
 
+enum QuickActionRoute: String {
+    case addBookmark = "AddBookmark"
+    case favorites = "Favorites"
+}
+
+@Observable
+class QuickActionService {
+    var pendingRoute: QuickActionRoute?
+}
+
 @main
 struct just_another_appApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Bookmark.self,
-            Folder.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @State private var quickActionService = QuickActionService()
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            // Schema migration failed — wipe store and retry
-            let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            let defaultStore = appSupport.appendingPathComponent("default.store")
-            for suffix in ["", "-wal", "-shm"] {
-                let url = suffix.isEmpty ? defaultStore : URL(fileURLWithPath: defaultStore.path + suffix)
-                try? FileManager.default.removeItem(at: url)
-            }
-            do {
-                return try ModelContainer(for: schema, configurations: [modelConfiguration])
-            } catch {
-                fatalError("Could not create ModelContainer after reset: \(error)")
-            }
-        }
-    }()
+    var sharedModelContainer: ModelContainer = SharedModelContainer.create()
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            MainTabView(quickActionService: quickActionService)
+                .onAppear {
+                    registerShortcuts()
+                }
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                handleShortcutIfNeeded()
+            }
+        }
+    }
+
+    @Environment(\.scenePhase) private var scenePhase
+
+    private func registerShortcuts() {
+        UIApplication.shared.shortcutItems = [
+            UIApplicationShortcutItem(
+                type: QuickActionRoute.addBookmark.rawValue,
+                localizedTitle: "Add Bookmark",
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(type: .add),
+                userInfo: nil
+            ),
+            UIApplicationShortcutItem(
+                type: QuickActionRoute.favorites.rawValue,
+                localizedTitle: "View Favorites",
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(type: .favorite),
+                userInfo: nil
+            ),
+        ]
+    }
+
+    private func handleShortcutIfNeeded() {
+        guard let shortcutType = Self.pendingShortcutType else { return }
+        Self.pendingShortcutType = nil
+        quickActionService.pendingRoute = QuickActionRoute(rawValue: shortcutType)
+    }
+
+    // Static storage for shortcut received before UI is ready
+    static var pendingShortcutType: String?
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        if let shortcutItem = options.shortcutItem {
+            just_another_appApp.pendingShortcutType = shortcutItem.type
+        }
+        let config = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+        config.delegateClass = SceneDelegate.self
+        return config
+    }
+}
+
+class SceneDelegate: NSObject, UIWindowSceneDelegate {
+    func windowScene(
+        _ windowScene: UIWindowScene,
+        performActionFor shortcutItem: UIApplicationShortcutItem,
+        completionHandler: @escaping (Bool) -> Void
+    ) {
+        just_another_appApp.pendingShortcutType = shortcutItem.type
+        completionHandler(true)
     }
 }

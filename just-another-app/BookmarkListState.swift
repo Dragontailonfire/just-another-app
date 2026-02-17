@@ -27,6 +27,7 @@ class BookmarkListState {
     var searchText: String = ""
     var filterFavoritesOnly: Bool = false
     var filterFolder: Folder? = nil
+    var filterDeadLinksOnly: Bool = false
     var isSelectMode: Bool = false
     var selectedBookmarkIDs: Set<PersistentIdentifier> = []
 }

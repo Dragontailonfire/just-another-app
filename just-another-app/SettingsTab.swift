@@ -22,6 +22,8 @@ struct SettingsTab: View {
     @State private var csvExportData: String?
     @State private var pendingImportURL: URL?
     @State private var showingChangelog = false
+    @State private var isFetchingFavicons = false
+    @State private var isCheckingLinks = false
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
@@ -51,6 +53,40 @@ struct SettingsTab: View {
                 Section("Stats") {
                     LabeledContent("Bookmarks", value: "\(bookmarks.count)")
                     LabeledContent("Folders", value: "\(folders.count)")
+                }
+
+                Section {
+                    Button {
+                        fetchMissingFavicons()
+                    } label: {
+                        HStack {
+                            Text("Fetch Missing Favicons")
+                            Spacer()
+                            if isFetchingFavicons {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                        }
+                    }
+                    .disabled(isFetchingFavicons)
+
+                    Button {
+                        checkAllLinks()
+                    } label: {
+                        HStack {
+                            Text("Check All Links")
+                            Spacer()
+                            if isCheckingLinks {
+                                ProgressView()
+                                    .controlSize(.small)
+                            }
+                        }
+                    }
+                    .disabled(isCheckingLinks)
+                } header: {
+                    Text("Maintenance")
+                } footer: {
+                    Text("Fetch favicons for bookmarks missing icons. Check links to find broken URLs.")
                 }
 
                 Section {
@@ -139,6 +175,34 @@ struct SettingsTab: View {
             alertTitle = "Import Failed"
             alertMessage = error.localizedDescription
             showingAlert = true
+        }
+    }
+
+    private func fetchMissingFavicons() {
+        isFetchingFavicons = true
+        let bookmarksToFetch = bookmarks
+        Task {
+            let count = await FaviconService.fetchMissingFavicons(bookmarks: bookmarksToFetch)
+            await MainActor.run {
+                isFetchingFavicons = false
+                alertTitle = "Favicons Updated"
+                alertMessage = "Fetched \(count) favicon\(count == 1 ? "" : "s")."
+                showingAlert = true
+            }
+        }
+    }
+
+    private func checkAllLinks() {
+        isCheckingLinks = true
+        let bookmarksToCheck = bookmarks
+        Task {
+            let (valid, dead) = await LinkCheckerService.checkAllLinks(bookmarks: bookmarksToCheck)
+            await MainActor.run {
+                isCheckingLinks = false
+                alertTitle = "Link Check Complete"
+                alertMessage = "\(valid) valid, \(dead) dead link\(dead == 1 ? "" : "s") found."
+                showingAlert = true
+            }
         }
     }
 }

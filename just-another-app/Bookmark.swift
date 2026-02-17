@@ -16,6 +16,9 @@ final class Bookmark {
     var createdDate: Date
     var isFavorite: Bool
     var sortOrder: Int
+    var faviconData: Data?
+    var linkStatus: String
+    var lastCheckedDate: Date?
 
     @Relationship(inverse: \Folder.bookmarks)
     var folder: Folder?
@@ -27,7 +30,10 @@ final class Bookmark {
         createdDate: Date = .now,
         isFavorite: Bool = false,
         sortOrder: Int = 0,
-        folder: Folder? = nil
+        folder: Folder? = nil,
+        faviconData: Data? = nil,
+        linkStatus: String = "unknown",
+        lastCheckedDate: Date? = nil
     ) {
         self.url = url
         self.name = name
@@ -36,5 +42,8 @@ final class Bookmark {
         self.isFavorite = isFavorite
         self.sortOrder = sortOrder
         self.folder = folder
+        self.faviconData = faviconData
+        self.linkStatus = linkStatus
+        self.lastCheckedDate = lastCheckedDate
     }
 }

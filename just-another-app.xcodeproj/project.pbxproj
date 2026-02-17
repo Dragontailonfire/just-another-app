@@ -6,7 +6,28 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8613DAB52F436B2E0084849F /* BookmarkShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8613DAAB2F436B2E0084849F /* BookmarkShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8613DAC52F436C110084849F /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8613DAC42F436C110084849F /* WidgetKit.framework */; };
+		8613DAC72F436C110084849F /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8613DAC62F436C110084849F /* SwiftUI.framework */; };
+		8613DAD62F436C130084849F /* BookmarkWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8613DAC22F436C110084849F /* BookmarkWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		8613DAB32F436B2E0084849F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 86FA2D6B2F40B21E00924211 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8613DAAA2F436B2E0084849F;
+			remoteInfo = BookmarkShareExtension;
+		};
+		8613DAD42F436C130084849F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 86FA2D6B2F40B21E00924211 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8613DAC12F436C110084849F;
+			remoteInfo = BookmarkWidgetExtension;
+		};
 		86FA2D832F40B22100924211 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 86FA2D6B2F40B21E00924211 /* Project object */;
@@ -23,15 +44,91 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		8613DAB62F436B2E0084849F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8613DAD62F436C130084849F /* BookmarkWidgetExtension.appex in Embed Foundation Extensions */,
+				8613DAB52F436B2E0084849F /* BookmarkShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		8613DAAB2F436B2E0084849F /* BookmarkShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BookmarkShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8613DAC22F436C110084849F /* BookmarkWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BookmarkWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		8613DAC42F436C110084849F /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		8613DAC62F436C110084849F /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		86FA2D732F40B21E00924211 /* just-another-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "just-another-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		86FA2D822F40B22100924211 /* just-another-appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "just-another-appTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		86FA2D8C2F40B22100924211 /* just-another-appUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "just-another-appUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8613DAB92F436B2E0084849F /* Exceptions for "BookmarkShareExtension" folder in "BookmarkShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8613DAAA2F436B2E0084849F /* BookmarkShareExtension */;
+		};
+		8613DAD72F436C130084849F /* Exceptions for "BookmarkWidget" folder in "BookmarkWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8613DAC12F436C110084849F /* BookmarkWidgetExtension */;
+		};
+		8613DBFA2F436DC60084849F /* Exceptions for "just-another-app" folder in "BookmarkShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Bookmark.swift,
+				FaviconService.swift,
+				Folder.swift,
+				FolderAppearance.swift,
+				SharedModelContainer.swift,
+			);
+			target = 8613DAAA2F436B2E0084849F /* BookmarkShareExtension */;
+		};
+		8613DBFB2F436DC60084849F /* Exceptions for "just-another-app" folder in "BookmarkWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Bookmark.swift,
+				Folder.swift,
+				SharedModelContainer.swift,
+			);
+			target = 8613DAC12F436C110084849F /* BookmarkWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		8613DAAC2F436B2E0084849F /* BookmarkShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8613DAB92F436B2E0084849F /* Exceptions for "BookmarkShareExtension" folder in "BookmarkShareExtension" target */,
+			);
+			path = BookmarkShareExtension;
+			sourceTree = "<group>";
+		};
+		8613DAC82F436C110084849F /* BookmarkWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8613DAD72F436C130084849F /* Exceptions for "BookmarkWidget" folder in "BookmarkWidgetExtension" target */,
+			);
+			path = BookmarkWidget;
+			sourceTree = "<group>";
+		};
 		86FA2D752F40B21E00924211 /* just-another-app */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8613DBFA2F436DC60084849F /* Exceptions for "just-another-app" folder in "BookmarkShareExtension" target */,
+				8613DBFB2F436DC60084849F /* Exceptions for "just-another-app" folder in "BookmarkWidgetExtension" target */,
+			);
 			path = "just-another-app";
 			sourceTree = "<group>";
 		};
@@ -48,6 +145,22 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		8613DAA82F436B2E0084849F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8613DABF2F436C110084849F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8613DAC72F436C110084849F /* SwiftUI.framework in Frameworks */,
+				8613DAC52F436C110084849F /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		86FA2D702F40B21E00924211 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -72,12 +185,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8613DAC32F436C110084849F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8613DAC42F436C110084849F /* WidgetKit.framework */,
+				8613DAC62F436C110084849F /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		86FA2D6A2F40B21E00924211 = {
 			isa = PBXGroup;
 			children = (
 				86FA2D752F40B21E00924211 /* just-another-app */,
 				86FA2D852F40B22100924211 /* just-another-appTests */,
 				86FA2D8F2F40B22100924211 /* just-another-appUITests */,
+				8613DAAC2F436B2E0084849F /* BookmarkShareExtension */,
+				8613DAC82F436C110084849F /* BookmarkWidget */,
+				8613DAC32F436C110084849F /* Frameworks */,
 				86FA2D742F40B21E00924211 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,6 +213,8 @@
 				86FA2D732F40B21E00924211 /* just-another-app.app */,
 				86FA2D822F40B22100924211 /* just-another-appTests.xctest */,
 				86FA2D8C2F40B22100924211 /* just-another-appUITests.xctest */,
+				8613DAAB2F436B2E0084849F /* BookmarkShareExtension.appex */,
+				8613DAC22F436C110084849F /* BookmarkWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +222,50 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		8613DAAA2F436B2E0084849F /* BookmarkShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8613DABA2F436B2E0084849F /* Build configuration list for PBXNativeTarget "BookmarkShareExtension" */;
+			buildPhases = (
+				8613DAA72F436B2E0084849F /* Sources */,
+				8613DAA82F436B2E0084849F /* Frameworks */,
+				8613DAA92F436B2E0084849F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8613DAAC2F436B2E0084849F /* BookmarkShareExtension */,
+			);
+			name = BookmarkShareExtension;
+			packageProductDependencies = (
+			);
+			productName = BookmarkShareExtension;
+			productReference = 8613DAAB2F436B2E0084849F /* BookmarkShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		8613DAC12F436C110084849F /* BookmarkWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8613DAD82F436C130084849F /* Build configuration list for PBXNativeTarget "BookmarkWidgetExtension" */;
+			buildPhases = (
+				8613DABE2F436C110084849F /* Sources */,
+				8613DABF2F436C110084849F /* Frameworks */,
+				8613DAC02F436C110084849F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8613DAC82F436C110084849F /* BookmarkWidget */,
+			);
+			name = BookmarkWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BookmarkWidgetExtension;
+			productReference = 8613DAC22F436C110084849F /* BookmarkWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		86FA2D722F40B21E00924211 /* just-another-app */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 86FA2D962F40B22100924211 /* Build configuration list for PBXNativeTarget "just-another-app" */;
@@ -102,10 +273,13 @@
 				86FA2D6F2F40B21E00924211 /* Sources */,
 				86FA2D702F40B21E00924211 /* Frameworks */,
 				86FA2D712F40B21E00924211 /* Resources */,
+				8613DAB62F436B2E0084849F /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				8613DAB42F436B2E0084849F /* PBXTargetDependency */,
+				8613DAD52F436C130084849F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				86FA2D752F40B21E00924211 /* just-another-app */,
@@ -170,9 +344,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					8613DAAA2F436B2E0084849F = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					8613DAC12F436C110084849F = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					86FA2D722F40B21E00924211 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -203,11 +383,27 @@
 				86FA2D722F40B21E00924211 /* just-another-app */,
 				86FA2D812F40B22100924211 /* just-another-appTests */,
 				86FA2D8B2F40B22100924211 /* just-another-appUITests */,
+				8613DAAA2F436B2E0084849F /* BookmarkShareExtension */,
+				8613DAC12F436C110084849F /* BookmarkWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		8613DAA92F436B2E0084849F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8613DAC02F436C110084849F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		86FA2D712F40B21E00924211 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -232,6 +428,20 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		8613DAA72F436B2E0084849F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8613DABE2F436C110084849F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		86FA2D6F2F40B21E00924211 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -256,6 +466,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		8613DAB42F436B2E0084849F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8613DAAA2F436B2E0084849F /* BookmarkShareExtension */;
+			targetProxy = 8613DAB32F436B2E0084849F /* PBXContainerItemProxy */;
+		};
+		8613DAD52F436C130084849F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8613DAC12F436C110084849F /* BookmarkWidgetExtension */;
+			targetProxy = 8613DAD42F436C130084849F /* PBXContainerItemProxy */;
+		};
 		86FA2D842F40B22100924211 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 86FA2D722F40B21E00924211 /* just-another-app */;
@@ -269,6 +489,130 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		8613DAB72F436B2E0084849F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BookmarkShareExtension/BookmarkShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D2T5JM26N3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BookmarkShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BookmarkShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tech.prana.just-another-app.BookmarkShareExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8613DAB82F436B2E0084849F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = BookmarkShareExtension/BookmarkShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D2T5JM26N3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BookmarkShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BookmarkShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tech.prana.just-another-app.BookmarkShareExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		8613DAD92F436C130084849F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BookmarkWidget/BookmarkWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D2T5JM26N3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BookmarkWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BookmarkWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tech.prana.just-another-app.BookmarkWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8613DADA2F436C130084849F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BookmarkWidget/BookmarkWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = D2T5JM26N3;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BookmarkWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BookmarkWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "tech.prana.just-another-app.BookmarkWidget";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		86FA2D942F40B22100924211 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -393,8 +737,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "just-another-app/just-another-app.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = D2T5JM26N3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -406,7 +751,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "tech.prana.just-another-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -420,8 +765,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "just-another-app/just-another-app.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = D2T5JM26N3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -433,7 +779,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.1;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "tech.prana.just-another-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -513,6 +859,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		8613DABA2F436B2E0084849F /* Build configuration list for PBXNativeTarget "BookmarkShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8613DAB72F436B2E0084849F /* Debug */,
+				8613DAB82F436B2E0084849F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8613DAD82F436C130084849F /* Build configuration list for PBXNativeTarget "BookmarkWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8613DAD92F436C130084849F /* Debug */,
+				8613DADA2F436C130084849F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		86FA2D6E2F40B21E00924211 /* Build configuration list for PBXProject "just-another-app" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

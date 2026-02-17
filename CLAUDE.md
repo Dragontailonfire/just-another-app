@@ -45,16 +45,16 @@ See `PLAN.md` for the living implementation plan, phase status tracking, and cha
 
 | File | Role |
 |------|------|
-| `just_another_appApp.swift` | @main entry, ModelContainer setup |
-| `MainTabView.swift` | Root TabView (Bookmarks, Folders, Settings) |
-| `Bookmark.swift` | @Model: url, name, descriptionText, createdDate, isFavorite, sortOrder, folder? |
+| `just_another_appApp.swift` | @main entry, SharedModelContainer, quick actions, AppDelegate |
+| `MainTabView.swift` | Root TabView (Bookmarks, Folders, Settings) + quick action routing |
+| `Bookmark.swift` | @Model: url, name, descriptionText, createdDate, isFavorite, sortOrder, faviconData, linkStatus, lastCheckedDate, folder? |
 | `Folder.swift` | @Model: name, sortOrder, parent?, children[], bookmarks[], colorName, iconName + bookmarkCount, totalBookmarkCount |
-| `BookmarkListState.swift` | @Observable state + ViewMode/SortMode enums + select mode for batch ops |
+| `BookmarkListState.swift` | @Observable state + ViewMode/SortMode enums + select mode + filterDeadLinksOnly |
 | `BookmarksTab.swift` | Bookmarks tab — search, sort, filter, view toggle, CRUD, batch operations |
 | `BookmarkListView.swift` | List layout with drag-to-reorder, multi-select UI, onOpenURL |
-| `BookmarkRowView.swift` | Row: name, URL, relative date, colored folder badge, swipe/context actions, onOpenURL |
-| `BookmarkCardView.swift` | Card: headline, description, URL, relative date, colored folder badge, onOpenURL |
-| `BookmarkFormView.swift` | Add/edit form with https:// pre-fill, URL validation, auto-fill via LPMetadataProvider, duplicate detection |
+| `BookmarkRowView.swift` | Row: 32px rounded-rect favicon, name, URL, dead link indicator, inline folder badge, swipe/context actions |
+| `BookmarkCardView.swift` | Card: favicon, name, URL, dead link indicator, folder badge, onOpenURL |
+| `BookmarkFormView.swift` | Add/edit form with https:// pre-fill, URL validation, auto-fill + favicon fetch, duplicate detection, WidgetKit refresh |
 | `FoldersTab.swift` | Folders tab — top-level list, CRUD |
 | `FolderDetailView.swift` | Folder contents: subfolders + bookmarks, add bookmark/subfolder |
 | `FolderRowView.swift` | Row: folder icon, name, total bookmark count, colored icon badge |
@@ -62,6 +62,12 @@ See `PLAN.md` for the living implementation plan, phase status tracking, and cha
 | `FolderAppearance.swift` | Color/icon palette definitions for folder customization |
 | `SafariView.swift` | UIViewControllerRepresentable wrapping SFSafariViewController for in-app browsing |
 | `SpotlightService.swift` | Core Spotlight indexing for bookmarks and folders |
-| `SettingsTab.swift` | Settings tab — CSV export/import, stats, Spotlight rebuild, version display, changelog |
+| `SettingsTab.swift` | Settings tab — CSV export/import, stats, fetch favicons, check links, Spotlight rebuild, changelog |
 | `CSVService.swift` | CSV engine — section-based format, RFC 4180 escaping, colorName/iconName columns |
 | `ChangelogView.swift` | In-app "What's New" sheet showing version history |
+| `SharedModelContainer.swift` | App Group shared ModelContainer for main app + extensions |
+| `FaviconService.swift` | Favicon fetching via LPMetadataProvider + Google fallback |
+| `LinkCheckerService.swift` | Dead link detection via HEAD requests |
+| `BookmarkShareExtension/ShareViewController.swift` | Share Extension entry point |
+| `BookmarkShareExtension/ShareBookmarkView.swift` | Share Extension SwiftUI save form |
+| `BookmarkWidget/BookmarkWidget.swift` | Home Screen Widget (small + medium sizes) |

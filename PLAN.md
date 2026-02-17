@@ -50,6 +50,7 @@ A personal bookmarking app to save and organize web links with folders, search, 
 | 13 | v1.1.1 — Compact card view, clear filters, subfolder edit swipe, folder name bug fix, NaN fix | ✅ Done |
 | 14 | iOS 26 + Liquid Glass migration (deployment target, glass cards/badges/pickers) | ✅ Done |
 | 15 | v1.2.1 — Folder child count, hierarchical paths, nav destination fix, pluralization, glass polish | ✅ Done |
+| 16 | v1.3.0 — Share Extension, favicons, widget, dead link detection, quick actions | ✅ Done |
 
 ---
 
@@ -69,3 +70,4 @@ A personal bookmarking app to save and organize web links with folders, search, 
 | 2026-02-15 | Phase 13 completed. v1.1.1 (build 3). Compact 2-column card view. Clear Filters button. Edit swipe on subfolders in FolderDetailView. Fixed subfolder name bug (explicit parent-child sync). Fixed NaN CoreGraphics error in card grid. |
 | 2026-02-15 | Phase 14 completed. v1.2.0 (build 4). iOS 26 migration: deployment target 26.0. Liquid Glass: glassEffect() on BookmarkCardView, FolderFormView pickers. GlassEffectContainer wraps card grid. Native two-finger multi-select in list view, card view multi-select with left-aligned checkmarks. Selection count in nav title. Tab bar hidden in select mode. |
 | 2026-02-15 | Phase 15 completed. v1.2.1 (build 5). Folder child count in FolderRowView. Hierarchical folder paths (Folder.path, Folder.hierarchicalSort) in all pickers. Fixed duplicate navigationDestination. Fixed singular/plural count labels. Reverted badge glass tint for legibility. |
+| 2026-02-16 | Phase 16 completed. v1.3.0 (build 6). Share Extension (BookmarkShareExtension target). Favicons (FaviconService, favicon display in row/card views). Home Screen Widget (BookmarkWidget target, small/medium sizes). Dead Link Detection (LinkCheckerService, dead link indicators, filter). Quick Actions (Add Bookmark, View Favorites). App Group shared container (SharedModelContainer). Bookmark model: faviconData, linkStatus, lastCheckedDate. WidgetKit timeline refresh on save. Design polish: larger rounded-rect favicons (32px row, 20px card), removed dates from list/card views, created date shown in edit form, inline folder badge with URL, globe fallback with filled background. |

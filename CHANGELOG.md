@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-02-16
+
+### Added
+- **Share Extension** — save bookmarks directly from Safari and other apps via the iOS share sheet
+- **Favicons** — bookmark icons fetched automatically from websites, displayed as rounded-rect icons in list (32px) and card (20px) views with a filled background fallback
+- **Home Screen Widget** — quick access to bookmarks with small (4 items) and medium (6 items) widget sizes
+- **Dead Link Detection** — check all bookmark URLs for broken links with results summary
+- **Quick Actions** — long-press the app icon to "Add Bookmark" or "View Favorites" (enables favorites filter)
+- **Fetch Missing Favicons** button in Settings to batch-fetch icons for all bookmarks
+- **Check All Links** button in Settings to validate all bookmark URLs
+- **Dead Links Only** filter toggle in Bookmarks tab filter menu
+- **App Group shared container** for data access across main app, Share Extension, and Widget
+- **Created date in edit form** — bookmark creation date shown when editing (moved from list/card views)
+
+### Changed
+- **Compact bookmark rows** — removed relative date from list/card views, folder badge now inline with URL on second line
+- **Larger rounded-rect favicons** — app icon style favicons (32px list, 20px card) with `tertiarySystemFill` background for globe fallback
+
+### Technical
+- New files: `SharedModelContainer.swift`, `FaviconService.swift`, `LinkCheckerService.swift`
+- New targets: `BookmarkShareExtension`, `BookmarkWidgetExtension` (created via Xcode)
+- Bookmark model: added `faviconData`, `linkStatus`, `lastCheckedDate` properties
+- App Group entitlement: `group.tech.prana.just-another-app`
+- WidgetKit integration: timelines refresh on bookmark save
+- Quick actions via `@Observable QuickActionService` + `AppDelegate`/`SceneDelegate`
+- `SharedModelContainer` caches the `ModelContainer` singleton to prevent memory issues
+
 ## [1.2.1] - 2026-02-15
 
 ### Added
