@@ -15,6 +15,20 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.5.0",
+                        date: "February 18, 2026",
+                        items: [
+                            "App Icon — custom bookmark icon with light, dark, and tinted variants",
+                            "Copy URL — one tap from swipe or context menu to copy a bookmark URL to the clipboard",
+                            "Customizable swipe actions — assign Favorite, Copy URL, Edit, or Delete to each swipe direction in Settings",
+                            "Search within folder — search bar in every folder detail view filters bookmarks and subfolders",
+                            "HTML export — export bookmarks as a browser-importable HTML file (Safari, Chrome, Firefox, Edge)",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.4.0",
                         date: "February 17, 2026",
                         items: [

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct BookmarkCardView: View {
     let bookmark: Bookmark
@@ -50,6 +51,29 @@ struct BookmarkCardView: View {
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassEffect(.regular, in: .rect(cornerRadius: 12))
+        .contextMenu {
+            Button {
+                bookmark.isFavorite.toggle()
+            } label: {
+                Label(
+                    bookmark.isFavorite ? "Unfavorite" : "Favorite",
+                    systemImage: bookmark.isFavorite ? "star.slash" : "star.fill"
+                )
+            }
+            Button {
+                UIPasteboard.general.string = bookmark.url
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            } label: {
+                Label("Copy URL", systemImage: "doc.on.doc")
+            }
+            if let url = URL(string: bookmark.url) {
+                Button {
+                    onOpenURL?(url)
+                } label: {
+                    Label("Open in Browser", systemImage: "safari")
+                }
+            }
+        }
     }
 
     @ViewBuilder

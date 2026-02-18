@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-02-18
+
+### Added
+- **App Icon** — custom bookmark icon with light, dark, and tinted variants for iOS
+- **Copy URL** — copy a bookmark's URL to the clipboard from swipe action or context menu (with haptic feedback)
+- **Customizable swipe actions** — assign Favorite, Copy URL, Edit, or Delete to leading and trailing swipe in Settings > Swipe Actions
+- **Search within folder** — search bar in folder detail view filters both bookmarks and subfolders by name/URL/description
+- **HTML export** — export bookmarks as a Netscape-format HTML file importable in Safari, Chrome, Firefox, and Edge
+
+### Technical
+- New file: `HTMLExportService.swift` — Netscape bookmark HTML format with folder hierarchy, HTML-escaped fields, Unix timestamps
+- `SwipeAction` enum in `BookmarkRowView.swift` — `favorite`, `copyURL`, `edit`, `delete` with label/icon/tint
+- `@AppStorage("leadingSwipeAction")` and `@AppStorage("trailingSwipeAction")` — persist swipe choices across launches
+- `onEdit` callback added to `BookmarkRowView` for Edit swipe action
+- `FolderDetailView`: `@State searchText`, `filteredBookmarks` and `filteredSubfolders` computed properties
+- Settings: HTML export `ShareLink`, swipe action `Picker` rows, updated Data section footer
+- Icon generator: standalone Swift script using CoreGraphics, outputs 1024×1024 PNGs
+
 ## [1.4.0] - 2026-02-17
 
 ### Added

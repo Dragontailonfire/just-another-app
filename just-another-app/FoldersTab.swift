@@ -16,9 +16,19 @@ struct FoldersTab: View {
     @State private var showingAddFolder = false
     @State private var folderToEdit: Folder?
     @State private var folderToDelete: Folder?
+    @State private var searchText = ""
 
     private var topLevelFolders: [Folder] {
         allFolders.filter { $0.parent == nil }
+    }
+
+    private var displayedFolders: [Folder] {
+        if searchText.isEmpty {
+            return topLevelFolders
+        }
+        // When searching, show all matching folders regardless of hierarchy
+        let query = searchText.lowercased()
+        return allFolders.filter { $0.name.lowercased().contains(query) }
     }
 
     var body: some View {
@@ -30,9 +40,11 @@ struct FoldersTab: View {
                         systemImage: "folder",
                         description: Text("Tap + to create your first folder.")
                     )
+                } else if displayedFolders.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
                 } else {
                     List {
-                        ForEach(topLevelFolders) { folder in
+                        ForEach(displayedFolders) { folder in
                             NavigationLink(value: folder) {
                                 FolderRowView(folder: folder)
                             }
@@ -67,6 +79,7 @@ struct FoldersTab: View {
                     }
                 }
             }
+            .searchable(text: $searchText, prompt: "Search folders")
             .navigationTitle("Folders")
             .navigationDestination(for: Folder.self) { folder in
                 FolderDetailView(folder: folder)

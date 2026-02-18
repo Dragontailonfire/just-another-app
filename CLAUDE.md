@@ -52,17 +52,18 @@ See `PLAN.md` for the living implementation plan, phase status tracking, and cha
 | `BookmarkListState.swift` | @Observable state + ViewMode/SortMode enums + select mode + filterDeadLinksOnly |
 | `BookmarksTab.swift` | Bookmarks tab — search, sort, filter, view toggle, CRUD, batch operations |
 | `BookmarkListView.swift` | List layout with drag-to-reorder, multi-select UI, onOpenURL |
-| `BookmarkRowView.swift` | Row: 32px rounded-rect favicon, name, URL, dead link indicator, inline folder badge, swipe/context actions |
+| `BookmarkRowView.swift` | Row: 32px rounded-rect favicon, name, URL, dead link indicator, inline folder badge, configurable swipe actions (SwipeAction enum) |
 | `BookmarkCardView.swift` | Card: favicon, name, URL, dead link indicator, folder badge, onOpenURL |
 | `BookmarkFormView.swift` | Add/edit form with https:// pre-fill, URL validation, auto-fill + favicon fetch, duplicate detection, WidgetKit refresh |
-| `FoldersTab.swift` | Folders tab — top-level list, CRUD |
-| `FolderDetailView.swift` | Folder contents: subfolders + bookmarks, add bookmark/subfolder |
+| `FoldersTab.swift` | Folders tab — top-level list, CRUD, search (shows all matching folders across hierarchy) |
+| `FolderDetailView.swift` | Folder contents: subfolders + bookmarks, add bookmark/subfolder, in-folder search |
 | `FolderRowView.swift` | Row: folder icon, name, total bookmark count, colored icon badge |
 | `FolderFormView.swift` | Add/edit form with parent picker, color and icon pickers |
 | `FolderAppearance.swift` | Color/icon palette definitions for folder customization |
 | `SafariView.swift` | UIViewControllerRepresentable wrapping SFSafariViewController for in-app browsing |
 | `SpotlightService.swift` | Core Spotlight indexing with privacy toggle (isEnabled guard, deleteAll) |
-| `SettingsTab.swift` | Settings tab — CSV export/import, stats, fetch favicons, check links, Spotlight toggle, changelog |
+| `SettingsTab.swift` | Settings tab — CSV/HTML export, import, stats, favicons, link check, Spotlight toggle, swipe action pickers, changelog |
+| `HTMLExportService.swift` | Netscape HTML bookmark export with folder hierarchy (browser-importable) |
 | `CSVService.swift` | CSV engine — section-based format, RFC 4180 escaping, injection protection, URL validation on import, atomic import |
 | `URLValidator.swift` | Centralized HTTP(S) URL validation + canonicalization |
 | `ConcurrencyLimiter.swift` | Actor-based semaphore for bounded concurrent network requests |

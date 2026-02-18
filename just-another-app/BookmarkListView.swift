@@ -26,6 +26,7 @@ struct BookmarkListView: View {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     },
                     onDelete: { onDelete(bookmark) },
+                    onEdit: { onSelect(bookmark) },
                     onOpenURL: onOpenURL
                 )
                 .tag(bookmark.persistentModelID)

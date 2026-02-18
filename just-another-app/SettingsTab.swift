@@ -25,6 +25,8 @@ struct SettingsTab: View {
     @State private var isFetchingFavicons = false
     @State private var isCheckingLinks = false
     @AppStorage("spotlightIndexingEnabled") private var spotlightIndexingEnabled = true
+    @AppStorage("leadingSwipeAction") private var leadingSwipeRaw = SwipeAction.favorite.rawValue
+    @AppStorage("trailingSwipeAction") private var trailingSwipeRaw = SwipeAction.delete.rawValue
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
@@ -35,11 +37,18 @@ struct SettingsTab: View {
     var body: some View {
         NavigationStack {
             List {
+                // MARK: Data
                 Section {
                     ShareLink(
-                        "Export Bookmarks",
+                        "Export as CSV",
                         item: generateCSV(),
                         preview: SharePreview("bookmarks.csv")
+                    )
+
+                    ShareLink(
+                        "Export as HTML",
+                        item: generateHTML(),
+                        preview: SharePreview("bookmarks.html")
                     )
 
                     Button("Import Bookmarks") {
@@ -48,14 +57,34 @@ struct SettingsTab: View {
                 } header: {
                     Text("Data")
                 } footer: {
-                    Text("Export creates a CSV file with all folders and bookmarks. Import replaces all existing data.")
+                    Text("CSV is for backup and re-import. HTML can be imported into Safari, Chrome, Firefox, and Edge.")
                 }
 
+                // MARK: Stats
                 Section("Stats") {
                     LabeledContent("Bookmarks", value: "\(bookmarks.count)")
                     LabeledContent("Folders", value: "\(folders.count)")
                 }
 
+                // MARK: Swipe Actions
+                Section {
+                    Picker("Leading Swipe", selection: $leadingSwipeRaw) {
+                        ForEach(leadingSwipeOptions, id: \.rawValue) { action in
+                            Label(action.label, systemImage: action.systemImage).tag(action.rawValue)
+                        }
+                    }
+                    Picker("Trailing Swipe", selection: $trailingSwipeRaw) {
+                        ForEach(trailingSwipeOptions, id: \.rawValue) { action in
+                            Label(action.label, systemImage: action.systemImage).tag(action.rawValue)
+                        }
+                    }
+                } header: {
+                    Text("Swipe Actions")
+                } footer: {
+                    Text("Choose what happens when you swipe left or right on a bookmark.")
+                }
+
+                // MARK: Maintenance
                 Section {
                     Button {
                         fetchMissingFavicons()
@@ -64,8 +93,7 @@ struct SettingsTab: View {
                             Text("Fetch Missing Favicons")
                             Spacer()
                             if isFetchingFavicons {
-                                ProgressView()
-                                    .controlSize(.small)
+                                ProgressView().controlSize(.small)
                             }
                         }
                     }
@@ -78,8 +106,7 @@ struct SettingsTab: View {
                             Text("Check All Links")
                             Spacer()
                             if isCheckingLinks {
-                                ProgressView()
-                                    .controlSize(.small)
+                                ProgressView().controlSize(.small)
                             }
                         }
                     }
@@ -90,6 +117,7 @@ struct SettingsTab: View {
                     Text("Fetch favicons for bookmarks missing icons. Check links to find broken URLs.")
                 }
 
+                // MARK: Spotlight
                 Section {
                     Toggle("Spotlight Indexing", isOn: $spotlightIndexingEnabled)
                         .onChange(of: spotlightIndexingEnabled) { _, enabled in
@@ -113,6 +141,7 @@ struct SettingsTab: View {
                     Text("Bookmark names and URLs appear in iOS Spotlight search. Disable to keep bookmarks private.")
                 }
 
+                // MARK: About
                 Section("About") {
                     LabeledContent("Version", value: appVersion)
                     Button("What's New") {
@@ -138,13 +167,9 @@ struct SettingsTab: View {
                 }
             }
             .alert("Replace All Data?", isPresented: $showingImportConfirm) {
-                Button("Cancel", role: .cancel) {
-                    pendingImportURL = nil
-                }
+                Button("Cancel", role: .cancel) { pendingImportURL = nil }
                 Button("Import", role: .destructive) {
-                    if let url = pendingImportURL {
-                        performImport(from: url)
-                    }
+                    if let url = pendingImportURL { performImport(from: url) }
                     pendingImportURL = nil
                 }
             } message: {
@@ -161,9 +186,27 @@ struct SettingsTab: View {
         }
     }
 
+    // MARK: - Swipe options
+
+    private var leadingSwipeOptions: [SwipeAction] {
+        [.favorite, .copyURL, .edit, .delete]
+    }
+
+    private var trailingSwipeOptions: [SwipeAction] {
+        [.delete, .favorite, .copyURL, .edit]
+    }
+
+    // MARK: - Export helpers
+
     private func generateCSV() -> String {
         CSVService.exportCSV(folders: folders, bookmarks: bookmarks)
     }
+
+    private func generateHTML() -> String {
+        HTMLExportService.exportHTML(folders: folders, bookmarks: bookmarks)
+    }
+
+    // MARK: - Import
 
     private func performImport(from url: URL) {
         do {
@@ -175,7 +218,6 @@ struct SettingsTab: View {
             }
             defer { url.stopAccessingSecurityScopedResource() }
 
-            // File size check
             let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
             if let fileSize = attributes[.size] as? UInt64, fileSize > CSVService.maxImportFileSize {
                 alertTitle = "Import Failed"
@@ -203,6 +245,8 @@ struct SettingsTab: View {
             showingAlert = true
         }
     }
+
+    // MARK: - Maintenance
 
     private func fetchMissingFavicons() {
         isFetchingFavicons = true

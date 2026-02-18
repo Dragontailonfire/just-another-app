@@ -20,12 +20,30 @@ struct FolderDetailView: View {
     @State private var subfolderToDelete: Folder?
     @State private var subfolderToEdit: Folder?
     @State private var urlToOpen: IdentifiableURL?
+    @State private var searchText = ""
+
+    private var filteredBookmarks: [Bookmark] {
+        let sorted = folder.bookmarks.sorted(by: { $0.createdDate > $1.createdDate })
+        guard !searchText.isEmpty else { return sorted }
+        let query = searchText.lowercased()
+        return sorted.filter {
+            $0.name.lowercased().contains(query) ||
+            $0.url.lowercased().contains(query) ||
+            $0.descriptionText.lowercased().contains(query)
+        }
+    }
+
+    private var filteredSubfolders: [Folder] {
+        let sorted = folder.children.sorted(by: { $0.name < $1.name })
+        guard !searchText.isEmpty else { return sorted }
+        return sorted.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+    }
 
     var body: some View {
         List {
-            if !folder.children.isEmpty {
+            if !filteredSubfolders.isEmpty {
                 Section("Subfolders") {
-                    ForEach(folder.children.sorted(by: { $0.name < $1.name })) { child in
+                    ForEach(filteredSubfolders) { child in
                         NavigationLink(value: child) {
                             FolderRowView(folder: child)
                         }
@@ -61,11 +79,11 @@ struct FolderDetailView: View {
             }
 
             Section("\(folder.bookmarks.count) \(folder.bookmarks.count == 1 ? "Bookmark" : "Bookmarks")") {
-                if folder.bookmarks.isEmpty {
-                    Text("No bookmarks in this folder")
+                if filteredBookmarks.isEmpty {
+                    Text(searchText.isEmpty ? "No bookmarks in this folder" : "No results")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(folder.bookmarks.sorted(by: { $0.createdDate > $1.createdDate })) { bookmark in
+                    ForEach(filteredBookmarks) { bookmark in
                         BookmarkRowView(
                             bookmark: bookmark,
                             onToggleFavorite: {
@@ -73,6 +91,7 @@ struct FolderDetailView: View {
                                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                             },
                             onDelete: { bookmarkToDelete = bookmark },
+                            onEdit: { bookmarkToEdit = bookmark },
                             onOpenURL: { urlToOpen = IdentifiableURL(url: $0) }
                         )
                         .contentShape(Rectangle())
@@ -81,6 +100,7 @@ struct FolderDetailView: View {
                 }
             }
         }
+        .searchable(text: $searchText, prompt: "Search in \(folder.name)")
         .navigationTitle(folder.name)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
