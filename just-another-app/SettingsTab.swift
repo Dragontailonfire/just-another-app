@@ -22,6 +22,7 @@ struct SettingsTab: View {
     @State private var csvExportData: String?
     @State private var pendingImportURL: URL?
     @State private var showingChangelog = false
+    @State private var showingHTMLImporter = false
     @State private var isFetchingFavicons = false
     @State private var isCheckingLinks = false
     @AppStorage("spotlightIndexingEnabled") private var spotlightIndexingEnabled = true
@@ -51,13 +52,17 @@ struct SettingsTab: View {
                         preview: SharePreview("bookmarks.html")
                     )
 
-                    Button("Import Bookmarks") {
+                    Button("Import CSV") {
                         showingImporter = true
+                    }
+
+                    Button("Import from Browser (HTML)") {
+                        showingHTMLImporter = true
                     }
                 } header: {
                     Text("Data")
                 } footer: {
-                    Text("CSV is for backup and re-import. HTML can be imported into Safari, Chrome, Firefox, and Edge.")
+                    Text("CSV replaces all data (backup/restore). HTML merges bookmarks from browser exports without deleting existing data.")
                 }
 
                 // MARK: Stats
@@ -183,6 +188,21 @@ struct SettingsTab: View {
             .sheet(isPresented: $showingChangelog) {
                 ChangelogView()
             }
+            .fileImporter(
+                isPresented: $showingHTMLImporter,
+                allowedContentTypes: [.html, .plainText],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    performHTMLImport(from: url)
+                case .failure(let error):
+                    alertTitle = "Import Failed"
+                    alertMessage = error.localizedDescription
+                    showingAlert = true
+                }
+            }
         }
     }
 
@@ -236,6 +256,44 @@ struct SettingsTab: View {
             var message = "Imported \(stats.folders) folder\(stats.folders == 1 ? "" : "s") and \(stats.bookmarks) bookmark\(stats.bookmarks == 1 ? "" : "s")."
             if stats.skipped > 0 {
                 message += " Skipped \(stats.skipped) invalid URL\(stats.skipped == 1 ? "" : "s")."
+            }
+            alertMessage = message
+            showingAlert = true
+        } catch {
+            alertTitle = "Import Failed"
+            alertMessage = error.localizedDescription
+            showingAlert = true
+        }
+    }
+
+    private func performHTMLImport(from url: URL) {
+        do {
+            guard url.startAccessingSecurityScopedResource() else {
+                alertTitle = "Import Failed"
+                alertMessage = "Could not access the selected file."
+                showingAlert = true
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            let attributes = try FileManager.default.attributesOfItem(atPath: url.path)
+            if let fileSize = attributes[.size] as? UInt64, fileSize > HTMLImportService.maxImportFileSize {
+                alertTitle = "Import Failed"
+                alertMessage = "File exceeds the 10 MB import limit."
+                showingAlert = true
+                return
+            }
+
+            let html = try String(contentsOf: url, encoding: .utf8)
+            let stats = try HTMLImportService.importHTML(from: html, context: modelContext)
+            if SpotlightService.isEnabled {
+                SpotlightService.reindexAll(bookmarks: bookmarks)
+            }
+
+            alertTitle = "Import Successful"
+            var message = "Added \(stats.foldersCreated) folder\(stats.foldersCreated == 1 ? "" : "s") and \(stats.bookmarksAdded) bookmark\(stats.bookmarksAdded == 1 ? "" : "s")."
+            if stats.skipped > 0 {
+                message += " Skipped \(stats.skipped) duplicate or invalid URL\(stats.skipped == 1 ? "" : "s")."
             }
             alertMessage = message
             showingAlert = true

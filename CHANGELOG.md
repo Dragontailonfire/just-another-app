@@ -10,14 +10,16 @@ All notable changes to this project will be documented in this file.
 - **Customizable swipe actions** — assign Favorite, Copy URL, Edit, or Delete to leading and trailing swipe in Settings > Swipe Actions
 - **Search within folder** — search bar in folder detail view filters both bookmarks and subfolders by name/URL/description
 - **HTML export** — export bookmarks as a Netscape-format HTML file importable in Safari, Chrome, Firefox, and Edge
+- **HTML import** — merge bookmarks from any browser's exported HTML file; existing data is never deleted, duplicate URLs are skipped
 
 ### Technical
 - New file: `HTMLExportService.swift` — Netscape bookmark HTML format with folder hierarchy, HTML-escaped fields, Unix timestamps
+- New file: `HTMLImportService.swift` — stack-based Netscape HTML parser; `findOrCreate` folder matching by name+parent; sequential millisecond timestamps preserve file order for undated entries
 - `SwipeAction` enum in `BookmarkRowView.swift` — `favorite`, `copyURL`, `edit`, `delete` with label/icon/tint
 - `@AppStorage("leadingSwipeAction")` and `@AppStorage("trailingSwipeAction")` — persist swipe choices across launches
 - `onEdit` callback added to `BookmarkRowView` for Edit swipe action
 - `FolderDetailView`: `@State searchText`, `filteredBookmarks` and `filteredSubfolders` computed properties
-- Settings: HTML export `ShareLink`, swipe action `Picker` rows, updated Data section footer
+- Settings: HTML export `ShareLink`, HTML import file picker (merge, no confirmation), swipe action `Picker` rows
 - Icon generator: standalone Swift script using CoreGraphics, outputs 1024×1024 PNGs
 
 ## [1.4.0] - 2026-02-17

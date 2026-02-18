@@ -23,6 +23,7 @@ struct ChangelogView: View {
                             "Customizable swipe actions — assign Favorite, Copy URL, Edit, or Delete to each swipe direction in Settings",
                             "Search within folder — search bar in every folder detail view filters bookmarks and subfolders",
                             "HTML export — export bookmarks as a browser-importable HTML file (Safari, Chrome, Firefox, Edge)",
+                            "HTML import — merge bookmarks from any browser's exported HTML file without deleting existing data",
                         ]
                     )
                 }

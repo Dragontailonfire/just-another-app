@@ -64,6 +64,7 @@ See `PLAN.md` for the living implementation plan, phase status tracking, and cha
 | `SpotlightService.swift` | Core Spotlight indexing with privacy toggle (isEnabled guard, deleteAll) |
 | `SettingsTab.swift` | Settings tab — CSV/HTML export, import, stats, favicons, link check, Spotlight toggle, swipe action pickers, changelog |
 | `HTMLExportService.swift` | Netscape HTML bookmark export with folder hierarchy (browser-importable) |
+| `HTMLImportService.swift` | Netscape HTML merge-import: stack-based parser, findOrCreate folders, skip duplicates, sequential timestamps |
 | `CSVService.swift` | CSV engine — section-based format, RFC 4180 escaping, injection protection, URL validation on import, atomic import |
 | `URLValidator.swift` | Centralized HTTP(S) URL validation + canonicalization |
 | `ConcurrencyLimiter.swift` | Actor-based semaphore for bounded concurrent network requests |
