@@ -16,6 +16,12 @@ struct BookmarksTab: View {
 
     @Binding var filterFavoritesOnAppear: Bool
     @State private var listState = BookmarkListState()
+    @AppStorage("tapAction") private var tapActionRaw = TapAction.openInApp.rawValue
+    @State private var deletedBookmark: BookmarkSnapshot? = nil
+    @State private var showingUndoBanner = false
+    @State private var undoTask: Task<Void, Never>? = nil
+
+    private var tapAction: TapAction { TapAction(rawValue: tapActionRaw) ?? .openInApp }
 
     init(filterFavoritesOnAppear: Binding<Bool> = .constant(false)) {
         _filterFavoritesOnAppear = filterFavoritesOnAppear
@@ -26,7 +32,6 @@ struct BookmarksTab: View {
     }
     @State private var showingAddForm = false
     @State private var bookmarkToEdit: Bookmark?
-    @State private var bookmarkToDelete: Bookmark?
     @State private var showingFilters = false
     @State private var urlToOpen: IdentifiableURL?
     @State private var showingMoveFolder = false
@@ -93,8 +98,9 @@ struct BookmarksTab: View {
                         BookmarkListView(
                             bookmarks: filteredAndSorted,
                             listState: listState,
-                            onSelect: { bookmarkToEdit = $0 },
-                            onDelete: { bookmarkToDelete = $0 },
+                            onSelect: { openBookmark($0) },
+                            onEdit: { bookmarkToEdit = $0 },
+                            onDelete: { scheduleDelete($0) },
                             onOpenURL: { urlToOpen = IdentifiableURL(url: $0) }
                         )
                         .transition(.opacity)
@@ -104,6 +110,24 @@ struct BookmarksTab: View {
                     }
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                if showingUndoBanner, let snap = deletedBookmark {
+                    HStack {
+                        Text("Deleted \"\(snap.name)\"")
+                            .font(.subheadline)
+                        Spacer()
+                        Button("Undo") { undoDelete(snap) }
+                            .fontWeight(.semibold)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.spring(response: 0.3), value: showingUndoBanner)
             .animation(.default, value: listState.viewMode)
             .navigationTitle(listState.isSelectMode ? "\(listState.selectedBookmarkIDs.count) Selected" : "Bookmarks")
             .searchable(text: $listState.searchText, prompt: "Search bookmarks")
@@ -206,22 +230,6 @@ struct BookmarksTab: View {
                     filterFavoritesOnAppear = false
                 }
             }
-            .alert("Delete Bookmark?", isPresented: Binding(
-                get: { bookmarkToDelete != nil },
-                set: { if !$0 { bookmarkToDelete = nil } }
-            )) {
-                Button("Cancel", role: .cancel) { bookmarkToDelete = nil }
-                Button("Delete", role: .destructive) {
-                    if let bookmark = bookmarkToDelete {
-                        UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                        SpotlightService.deindex(bookmark: bookmark)
-                        modelContext.delete(bookmark)
-                    }
-                    bookmarkToDelete = nil
-                }
-            } message: {
-                Text("Are you sure you want to delete \"\(bookmarkToDelete?.name ?? "")\"?")
-            }
         }
     }
 
@@ -250,7 +258,7 @@ struct BookmarksTab: View {
                                     listState.selectedBookmarkIDs.insert(id)
                                 }
                             } else {
-                                bookmarkToEdit = bookmark
+                                openBookmark(bookmark)
                             }
                         }
                         .contextMenu {
@@ -262,16 +270,38 @@ struct BookmarksTab: View {
                                     systemImage: bookmark.isFavorite ? "star.slash" : "star.fill"
                                 )
                             }
+                            Button {
+                                UIPasteboard.general.string = bookmark.url
+                                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            } label: {
+                                Label("Copy URL", systemImage: "doc.on.doc")
+                            }
                             if let url = URL(string: bookmark.url) {
                                 Button {
                                     urlToOpen = IdentifiableURL(url: url)
                                 } label: {
-                                    Label("Open in Browser", systemImage: "safari")
+                                    Label("Open in App Browser", systemImage: "safari")
+                                }
+                                Button {
+                                    UIApplication.shared.open(url)
+                                } label: {
+                                    Label("Open in Default Browser", systemImage: "arrow.up.right.square")
                                 }
                             }
                             Divider()
+                            Button {
+                                bookmarkToEdit = bookmark
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            Button {
+                                Task { await LinkCheckerService.checkLink(for: bookmark) }
+                            } label: {
+                                Label("Check Link", systemImage: "network")
+                            }
+                            Divider()
                             Button(role: .destructive) {
-                                bookmarkToDelete = bookmark
+                                scheduleDelete(bookmark)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -350,6 +380,57 @@ struct BookmarksTab: View {
         (listState.filterFavoritesOnly ? 1 : 0) +
         (listState.filterFolder != nil ? 1 : 0) +
         (listState.filterDeadLinksOnly ? 1 : 0)
+    }
+
+    // MARK: - Tap Action
+
+    private func openBookmark(_ bookmark: Bookmark) {
+        switch tapAction {
+        case .openInApp:
+            if let url = URL(string: bookmark.url) {
+                urlToOpen = IdentifiableURL(url: url)
+            }
+        case .openInBrowser:
+            if let url = URL(string: bookmark.url) {
+                UIApplication.shared.open(url)
+            }
+        case .edit:
+            bookmarkToEdit = bookmark
+        }
+    }
+
+    // MARK: - Undo Delete
+
+    private func scheduleDelete(_ bookmark: Bookmark) {
+        let snapshot = BookmarkSnapshot(bookmark)
+        undoTask?.cancel()
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        SpotlightService.deindex(bookmark: bookmark)
+        modelContext.delete(bookmark)
+        deletedBookmark = snapshot
+        withAnimation { showingUndoBanner = true }
+        undoTask = Task {
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { withAnimation { showingUndoBanner = false } }
+        }
+    }
+
+    private func undoDelete(_ snapshot: BookmarkSnapshot) {
+        undoTask?.cancel()
+        let bookmark = Bookmark(
+            url: snapshot.url,
+            name: snapshot.name,
+            descriptionText: snapshot.descriptionText,
+            createdDate: snapshot.createdDate,
+            isFavorite: snapshot.isFavorite,
+            sortOrder: snapshot.sortOrder,
+            folder: snapshot.folder,
+            faviconData: snapshot.faviconData
+        )
+        modelContext.insert(bookmark)
+        withAnimation { showingUndoBanner = false }
+        deletedBookmark = nil
     }
 
     // MARK: - Batch Operations

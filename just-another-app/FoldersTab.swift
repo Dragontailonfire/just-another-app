@@ -11,7 +11,7 @@ import UIKit
 
 struct FoldersTab: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Folder.name) private var allFolders: [Folder]
+    @Query(sort: [SortDescriptor(\Folder.sortOrder), SortDescriptor(\Folder.name)]) private var allFolders: [Folder]
 
     @State private var showingAddFolder = false
     @State private var folderToEdit: Folder?
@@ -76,6 +76,7 @@ struct FoldersTab: View {
                                 }
                             }
                         }
+                        .onMove(perform: searchText.isEmpty ? moveFolders : nil)
                     }
                 }
             }
@@ -112,6 +113,16 @@ struct FoldersTab: View {
             } message: {
                 Text("Are you sure you want to delete \"\(folderToDelete?.name ?? "")\"? Bookmarks in this folder will become uncategorized.")
             }
+        }
+    }
+
+    // MARK: - Reorder
+
+    private func moveFolders(from source: IndexSet, to destination: Int) {
+        var ordered = displayedFolders
+        ordered.move(fromOffsets: source, toOffset: destination)
+        for (index, folder) in ordered.enumerated() {
+            folder.sortOrder = index
         }
     }
 }

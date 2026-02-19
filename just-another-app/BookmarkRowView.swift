@@ -6,6 +6,47 @@
 //
 
 import SwiftUI
+import UIKit
+
+// MARK: - Tap Action Config
+
+enum TapAction: String, CaseIterable {
+    case openInApp     = "openInApp"
+    case openInBrowser = "openInBrowser"
+    case edit          = "edit"
+
+    var label: String {
+        switch self {
+        case .openInApp:     return "In-App Browser"
+        case .openInBrowser: return "Default Browser"
+        case .edit:          return "Edit Bookmark"
+        }
+    }
+}
+
+// MARK: - Bookmark Snapshot (for undo delete)
+
+struct BookmarkSnapshot {
+    let name: String
+    let url: String
+    let descriptionText: String
+    let createdDate: Date
+    let isFavorite: Bool
+    let sortOrder: Int
+    let folder: Folder?
+    let faviconData: Data?
+
+    init(_ bookmark: Bookmark) {
+        name = bookmark.name
+        url = bookmark.url
+        descriptionText = bookmark.descriptionText
+        createdDate = bookmark.createdDate
+        isFavorite = bookmark.isFavorite
+        sortOrder = bookmark.sortOrder
+        folder = bookmark.folder
+        faviconData = bookmark.faviconData
+    }
+}
 
 // MARK: - Swipe Action Config
 
@@ -115,8 +156,24 @@ struct BookmarkRowView: View {
                 Button {
                     onOpenURL?(url)
                 } label: {
-                    Label("Open in Browser", systemImage: "safari")
+                    Label("Open in App Browser", systemImage: "safari")
                 }
+                Button {
+                    UIApplication.shared.open(url)
+                } label: {
+                    Label("Open in Default Browser", systemImage: "arrow.up.right.square")
+                }
+            }
+            Divider()
+            Button {
+                onEdit?()
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            Button {
+                Task { await LinkCheckerService.checkLink(for: bookmark) }
+            } label: {
+                Label("Check Link", systemImage: "network")
             }
             Divider()
             Button(role: .destructive, action: onDelete) {

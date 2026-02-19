@@ -28,6 +28,7 @@ struct SettingsTab: View {
     @AppStorage("spotlightIndexingEnabled") private var spotlightIndexingEnabled = true
     @AppStorage("leadingSwipeAction") private var leadingSwipeRaw = SwipeAction.favorite.rawValue
     @AppStorage("trailingSwipeAction") private var trailingSwipeRaw = SwipeAction.delete.rawValue
+    @AppStorage("tapAction") private var tapActionRaw = TapAction.openInApp.rawValue
 
     private var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
@@ -71,8 +72,13 @@ struct SettingsTab: View {
                     LabeledContent("Folders", value: "\(folders.count)")
                 }
 
-                // MARK: Swipe Actions
+                // MARK: Gestures
                 Section {
+                    Picker("Tap", selection: $tapActionRaw) {
+                        ForEach(TapAction.allCases, id: \.rawValue) { action in
+                            Text(action.label).tag(action.rawValue)
+                        }
+                    }
                     Picker("Leading Swipe", selection: $leadingSwipeRaw) {
                         ForEach(leadingSwipeOptions, id: \.rawValue) { action in
                             Label(action.label, systemImage: action.systemImage).tag(action.rawValue)
@@ -84,9 +90,9 @@ struct SettingsTab: View {
                         }
                     }
                 } header: {
-                    Text("Swipe Actions")
+                    Text("Gestures")
                 } footer: {
-                    Text("Choose what happens when you swipe left or right on a bookmark.")
+                    Text("Choose what a tap opens, and what each swipe direction does on a bookmark.")
                 }
 
                 // MARK: Maintenance

@@ -1,6 +1,6 @@
 # Just Another App
 
-A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organize, and manage web links with folders, search, sorting, filtering, card/list views, CSV/HTML export, in-app browsing, Spotlight indexing, batch operations, favicons, Share Extension, home screen widget, dead link detection, quick actions, privacy controls, and customizable swipe actions.
+A personal bookmarking app for iOS built with SwiftUI and SwiftData. Save, organize, and manage web links with folders, search, sorting, filtering, card/list views, CSV/HTML export/import, in-app browsing, default browser support, Spotlight indexing, batch operations, favicons, Share Extension, home screen widget, dead link detection, quick actions, privacy controls, customizable gestures, and undo delete.
 
 ## Requirements
 
@@ -135,15 +135,15 @@ just-another-app/
 - **Search:** `searchable` modifier filtering by name, URL, and description (case-insensitive, in-memory).
 - **Sort:** Toolbar menu — Newest First, Oldest First, A-Z, Z-A, Manual. Manual mode enables drag-to-reorder via `.onMove`.
 - **Filter:** Toolbar menu — Favorites Only toggle, Folder picker (with active filter count badge on icon).
-- **Bookmark row:** Rounded-rect favicon (32px), name, URL with inline colored folder badge capsule. Swipe right to favorite (yellow tint), swipe left to delete. Context menu: favorite, open in-app browser, delete. Supports `onOpenURL` for deep linking.
-- **Bookmark card:** Rounded-rect favicon (20px), name, URL, colored folder badge. Glass effect card. Context menu same as row. Supports `onOpenURL` for deep linking.
+- **Bookmark row:** Rounded-rect favicon (32px), name, URL with inline colored folder badge capsule. Configurable swipe actions (see Gestures). Context menu: Favorite, Copy URL, Open in App Browser, Open in Default Browser, Edit, Check Link, Delete. Supports `onOpenURL` for deep linking.
+- **Bookmark card:** Rounded-rect favicon (20px), name, URL, colored folder badge. System background (not Liquid Glass — per HIG, glass is navigation-layer only). Context menu same as row. Supports `onOpenURL` for deep linking.
 - **Add/Edit:** Sheet form (`BookmarkFormView`) with URL field (pre-filled with `https://`, keyboard type `.URL`, HTTP/HTTPS validation with inline error), name (auto-filled from URL via `LPMetadataProvider`), description (multi-line), folder picker (Button-based selection). Duplicate URL detection warns when a URL already exists. Same form serves both add and edit. Edit mode shows created date.
-- **Delete:** All deletes show a confirmation alert before proceeding.
+- **Delete:** Bookmark deletions are immediate with a 4-second "Undo" toast banner (`.safeAreaInset`). Tapping Undo re-creates the bookmark with all original data.
 - **Batch operations:** Select mode enables multi-select across bookmarks. Batch actions: toggle favorite, move to folder, delete selected. Managed via `BookmarkListState`.
 
 ### Folders Tab (`FoldersTab.swift`)
 
-- **List:** Top-level folders (filtered by `parent == nil`), sorted by name. Each row shows folder icon, name, and total bookmark count.
+- **List:** Top-level folders (filtered by `parent == nil`), sorted by `sortOrder` then name. Each row shows folder icon, name, and total bookmark count. Drag to reorder (disabled during active search); `sortOrder` is persisted on the model.
 - **Navigation:** `NavigationLink` pushes to `FolderDetailView`.
 - **FolderDetailView:** Two sections — Subfolders (with NavigationLinks for deep nesting) and Bookmarks (sorted newest first). Toolbar "+" menu to add bookmark (pre-selects current folder) or add subfolder.
 - **Add/Edit:** Sheet form (`FolderFormView`) with name field, parent folder picker (Button-based selection, excludes self to prevent cycles), color picker, and icon picker.
@@ -153,11 +153,13 @@ just-another-app/
 
 ### Settings Tab (`SettingsTab.swift`)
 
-- **Export:** `ShareLink` generates CSV string and presents iOS share sheet. Filename: `bookmarks.csv`.
-- **Import:** `fileImporter` accepting `.commaSeparatedText` and `.plainText`. Shows confirmation alert warning that import replaces all data. Handles security-scoped resource access. Shows success/error alert.
+- **Export:** `ShareLink` for CSV (`bookmarks.csv`) and HTML (`bookmarks.html`) via the system share sheet.
+- **Import CSV:** `fileImporter` for `.csv`/`.plainText`. Confirmation alert warns that import replaces all data. Shows stats (folders, bookmarks, skipped) on completion.
+- **Import HTML:** `fileImporter` for `.html`/`.plainText`. Merge-only (no delete). Parses Netscape Bookmark File format; creates folders, skips duplicate URLs. Shows stats on completion.
+- **Gestures:** Tap Action picker (In-App Browser / Default Browser / Edit Bookmark). Leading and trailing swipe action pickers (Favorite, Copy URL, Edit, Delete).
 - **Stats:** Displays current bookmark and folder counts.
-- **Spotlight:** "Rebuild Spotlight Index" button to re-index all bookmarks.
-- **About:** Displays app version (marketing version + build number from `Bundle.main.infoDictionary`). "What's New" button opens `ChangelogView` sheet with version history.
+- **Spotlight:** Toggle indexing on/off; "Rebuild Spotlight Index" button.
+- **About:** App version + "What's New" opens `ChangelogView`.
 
 ### CSV Format (`CSVService.swift`)
 
@@ -209,7 +211,8 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### Dead Link Detection (`LinkCheckerService.swift`)
 
-- Settings > "Check All Links" validates all bookmark URLs via HEAD requests (10s timeout).
+- Settings > "Check All Links" validates all bookmark URLs via HEAD requests (10s timeout, max 6 concurrent).
+- Context menu > "Check Link" validates a single bookmark's URL on demand.
 - HTTP 200-399 = valid, everything else = dead.
 - Dead bookmarks show a red warning triangle icon in list and card views.
 - "Dead Links Only" filter toggle in Bookmarks tab filter menu.
@@ -232,12 +235,11 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 - One-tap copy of any bookmark URL to the clipboard from context menu (long-press) or configurable swipe action.
 - Haptic success feedback on copy.
 
-### Customizable Swipe Actions (`BookmarkRowView.swift`)
+### Gestures (`BookmarkRowView.swift`, `SettingsTab.swift`)
 
-- Leading and trailing swipe actions are individually configurable in Settings > Swipe Actions.
-- Options: Favorite, Copy URL, Edit, Delete.
-- Defaults: leading = Favorite, trailing = Delete (same as before).
-- Persisted via `@AppStorage("leadingSwipeAction")` / `@AppStorage("trailingSwipeAction")`.
+- **Tap action:** configurable in Settings › Gestures — In-App Browser (default), Default Browser, or Edit Bookmark. Persisted via `@AppStorage("tapAction")`. `TapAction` enum defined in `BookmarkRowView.swift`.
+- **Swipe actions:** leading and trailing swipe individually configurable — Favorite, Copy URL, Edit, Delete. Persisted via `@AppStorage("leadingSwipeAction")` / `@AppStorage("trailingSwipeAction")`.
+- **Context menu:** always shows Favorite, Copy URL, Open in App Browser, Open in Default Browser, Edit, Check Link, Delete — regardless of gesture settings.
 
 ### Search Within Folder (`FolderDetailView.swift`)
 
@@ -253,7 +255,8 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### UX Polish
 
-- **Delete confirmations:** All destructive actions across all tabs show an alert with item name before proceeding.
+- **Undo delete:** Bookmark deletion is instant (no confirmation). A spring-animated `.safeAreaInset` toast appears for 4 seconds with an "Undo" button that re-creates the bookmark from a `BookmarkSnapshot`. Folder deletion still shows a confirmation alert.
+- **Tap action:** Configurable in Settings › Gestures. Defaults to "In-App Browser". Options: In-App Browser, Default Browser, Edit Bookmark. Edit and Check Link in context menus always work regardless of tap setting.
 - **Created date in edit form:** Bookmark edit form displays the creation date. Dates are not shown in list/card views for a compact layout.
 - **URL validation:** Bookmark form validates HTTP/HTTPS scheme and host presence. Shows inline red error text. Save disabled when invalid.
 - **Haptic feedback:** Medium impact on favorite toggle, warning notification on confirmed deletes. Uses `UIImpactFeedbackGenerator` and `UINotificationFeedbackGenerator`.
@@ -276,8 +279,8 @@ https://example.com,Example,A site,2026-02-14T10:00:00Z,true,0,Work/Projects
 
 ### Versioning
 
-- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.5.0`).
-- `CURRENT_PROJECT_VERSION` tracks the build number (currently `8`).
+- `MARKETING_VERSION` in project.pbxproj tracks the user-facing version (currently `1.6.0`).
+- `CURRENT_PROJECT_VERSION` tracks the build number (currently `9`).
 - `CHANGELOG.md` documents all changes per version.
 - `ChangelogView.swift` mirrors the changelog in-app, shown from Settings > "What's New".
 

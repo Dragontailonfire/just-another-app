@@ -13,6 +13,7 @@ struct BookmarkListView: View {
     let bookmarks: [Bookmark]
     @Bindable var listState: BookmarkListState
     var onSelect: (Bookmark) -> Void = { _ in }
+    var onEdit: (Bookmark) -> Void = { _ in }
     var onDelete: (Bookmark) -> Void = { _ in }
     var onOpenURL: ((URL) -> Void)?
 
@@ -26,7 +27,7 @@ struct BookmarkListView: View {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     },
                     onDelete: { onDelete(bookmark) },
-                    onEdit: { onSelect(bookmark) },
+                    onEdit: { onEdit(bookmark) },
                     onOpenURL: onOpenURL
                 )
                 .tag(bookmark.persistentModelID)

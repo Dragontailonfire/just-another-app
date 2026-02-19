@@ -16,11 +16,16 @@ struct FolderDetailView: View {
     @State private var showingAddBookmark = false
     @State private var showingAddSubfolder = false
     @State private var bookmarkToEdit: Bookmark?
-    @State private var bookmarkToDelete: Bookmark?
     @State private var subfolderToDelete: Folder?
     @State private var subfolderToEdit: Folder?
     @State private var urlToOpen: IdentifiableURL?
     @State private var searchText = ""
+    @State private var deletedBookmark: BookmarkSnapshot? = nil
+    @State private var showingUndoBanner = false
+    @State private var undoTask: Task<Void, Never>? = nil
+    @AppStorage("tapAction") private var tapActionRaw = TapAction.openInApp.rawValue
+
+    private var tapAction: TapAction { TapAction(rawValue: tapActionRaw) ?? .openInApp }
 
     private var filteredBookmarks: [Bookmark] {
         let sorted = folder.bookmarks.sorted(by: { $0.createdDate > $1.createdDate })
@@ -90,16 +95,34 @@ struct FolderDetailView: View {
                                 bookmark.isFavorite.toggle()
                                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                             },
-                            onDelete: { bookmarkToDelete = bookmark },
+                            onDelete: { scheduleDelete(bookmark) },
                             onEdit: { bookmarkToEdit = bookmark },
                             onOpenURL: { urlToOpen = IdentifiableURL(url: $0) }
                         )
                         .contentShape(Rectangle())
-                        .onTapGesture { bookmarkToEdit = bookmark }
+                        .onTapGesture { openBookmark(bookmark) }
                     }
                 }
             }
         }
+        .safeAreaInset(edge: .bottom) {
+            if showingUndoBanner, let snap = deletedBookmark {
+                HStack {
+                    Text("Deleted \"\(snap.name)\"")
+                        .font(.subheadline)
+                    Spacer()
+                    Button("Undo") { undoDelete(snap) }
+                        .fontWeight(.semibold)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+                .padding(.bottom, 4)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.3), value: showingUndoBanner)
         .searchable(text: $searchText, prompt: "Search in \(folder.name)")
         .navigationTitle(folder.name)
         .toolbar {
@@ -136,23 +159,7 @@ struct FolderDetailView: View {
         .sheet(item: $bookmarkToEdit) { bookmark in
             BookmarkFormView(bookmarkToEdit: bookmark)
         }
-        .alert("Delete Bookmark?", isPresented: Binding(
-            get: { bookmarkToDelete != nil },
-            set: { if !$0 { bookmarkToDelete = nil } }
-        )) {
-            Button("Cancel", role: .cancel) { bookmarkToDelete = nil }
-            Button("Delete", role: .destructive) {
-                if let bookmark = bookmarkToDelete {
-                    UINotificationFeedbackGenerator().notificationOccurred(.warning)
-                    SpotlightService.deindex(bookmark: bookmark)
-                    modelContext.delete(bookmark)
-                }
-                bookmarkToDelete = nil
-            }
-        } message: {
-            Text("Are you sure you want to delete \"\(bookmarkToDelete?.name ?? "")\"?")
-        }
-        .alert("Delete Folder?", isPresented: Binding(
+        .alert("Delete Subfolder?", isPresented: Binding(
             get: { subfolderToDelete != nil },
             set: { if !$0 { subfolderToDelete = nil } }
         )) {
@@ -167,5 +174,56 @@ struct FolderDetailView: View {
         } message: {
             Text("Are you sure you want to delete \"\(subfolderToDelete?.name ?? "")\"?")
         }
+    }
+
+    // MARK: - Tap Action
+
+    private func openBookmark(_ bookmark: Bookmark) {
+        switch tapAction {
+        case .openInApp:
+            if let url = URL(string: bookmark.url) {
+                urlToOpen = IdentifiableURL(url: url)
+            }
+        case .openInBrowser:
+            if let url = URL(string: bookmark.url) {
+                UIApplication.shared.open(url)
+            }
+        case .edit:
+            bookmarkToEdit = bookmark
+        }
+    }
+
+    // MARK: - Undo Delete
+
+    private func scheduleDelete(_ bookmark: Bookmark) {
+        let snapshot = BookmarkSnapshot(bookmark)
+        undoTask?.cancel()
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        SpotlightService.deindex(bookmark: bookmark)
+        modelContext.delete(bookmark)
+        deletedBookmark = snapshot
+        withAnimation { showingUndoBanner = true }
+        undoTask = Task {
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { withAnimation { showingUndoBanner = false } }
+        }
+    }
+
+    private func undoDelete(_ snapshot: BookmarkSnapshot) {
+        undoTask?.cancel()
+        let bookmark = Bookmark(
+            url: snapshot.url,
+            name: snapshot.name,
+            descriptionText: snapshot.descriptionText,
+            createdDate: snapshot.createdDate,
+            isFavorite: snapshot.isFavorite,
+            sortOrder: snapshot.sortOrder,
+            folder: snapshot.folder,
+            faviconData: snapshot.faviconData
+        )
+        modelContext.insert(bookmark)
+        withAnimation { showingUndoBanner = false }
+        deletedBookmark = nil
     }
 }

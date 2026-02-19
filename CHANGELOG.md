@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-02-19
+
+### Added
+- **Tap action** — choose whether tapping a bookmark opens the in-app browser, your default browser, or the edit form (Settings › Gestures)
+- **Open in Default Browser** — available in the context menu on every bookmark regardless of tap action setting
+- **Edit in context menu** — long-press any bookmark in list or card view to edit it directly
+- **Check Link in context menu** — validate a single bookmark's URL on demand from its context menu
+- **Undo delete** — bookmark deletions are instant; a 4-second "Undo" toast replaces the confirmation dialog
+- **Manual folder sort** — drag folders into any order in the Folders tab; order persists across launches
+
+### Changed
+- **Card background** — bookmark cards in grid view use a standard system background instead of Liquid Glass, per Apple HIG (glass is reserved for the navigation layer, not content)
+- Settings "Swipe Actions" section renamed to "Gestures"; now includes the Tap Action picker
+
+### Technical
+- `TapAction` enum (`openInApp`, `openInBrowser`, `edit`) with `@AppStorage("tapAction")` persisted preference
+- `BookmarkSnapshot` struct captures bookmark data before deletion for undo re-creation
+- `scheduleDelete` / `undoDelete` helpers with `Task.sleep` auto-dismiss in `BookmarksTab` and `FolderDetailView`
+- `BookmarkListView` now has a dedicated `onEdit` callback separate from `onSelect` — Edit in context menu always opens the form regardless of tap action setting
+- `FoldersTab`: `@Query` sort by `[sortOrder, name]`, `.onMove` drag reorder disabled during search
+- `LinkCheckerService.checkLink(for:)` wired into all context menus for per-bookmark link checking
+
 ## [1.5.0] - 2026-02-18
 
 ### Added

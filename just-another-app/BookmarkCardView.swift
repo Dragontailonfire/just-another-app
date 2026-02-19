@@ -11,6 +11,7 @@ import UIKit
 struct BookmarkCardView: View {
     let bookmark: Bookmark
     var onOpenURL: ((URL) -> Void)?
+    var onEdit: (() -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -50,7 +51,7 @@ struct BookmarkCardView: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
         .contextMenu {
             Button {
                 bookmark.isFavorite.toggle()
@@ -70,8 +71,24 @@ struct BookmarkCardView: View {
                 Button {
                     onOpenURL?(url)
                 } label: {
-                    Label("Open in Browser", systemImage: "safari")
+                    Label("Open in App Browser", systemImage: "safari")
                 }
+                Button {
+                    UIApplication.shared.open(url)
+                } label: {
+                    Label("Open in Default Browser", systemImage: "arrow.up.right.square")
+                }
+            }
+            Divider()
+            Button {
+                onEdit?()
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            Button {
+                Task { await LinkCheckerService.checkLink(for: bookmark) }
+            } label: {
+                Label("Check Link", systemImage: "network")
             }
         }
     }

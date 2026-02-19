@@ -15,6 +15,20 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.6.0",
+                        date: "February 19, 2026",
+                        items: [
+                            "Tap action — choose whether a tap opens in the in-app browser, your default browser, or the edit form (Settings › Gestures)",
+                            "Edit and Check Link — long-press any bookmark to edit it or validate its URL on demand",
+                            "Open in Default Browser — always available in the context menu regardless of your tap setting",
+                            "Undo delete — bookmark deletions are instant with a 4-second Undo toast instead of a confirmation dialog",
+                            "Sort folders — drag folders into any order in the Folders tab",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.5.0",
                         date: "February 18, 2026",
                         items: [
