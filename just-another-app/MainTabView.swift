@@ -24,6 +24,9 @@ struct MainTabView: View {
             Tab("Settings", systemImage: "gear", value: "settings") {
                 SettingsTab()
             }
+            Tab("Search", systemImage: "magnifyingglass", value: "search", role: .search) {
+                SearchTab()
+            }
         }
         .onChange(of: quickActionService.pendingRoute) { _, route in
             guard let route = route else { return }

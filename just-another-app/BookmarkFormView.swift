@@ -25,11 +25,21 @@ struct BookmarkFormView: View {
     @State private var metadataTask: Task<Void, Never>?
     @State private var showingDuplicateAlert = false
     @State private var fetchedFaviconData: Data?
+    @State private var folderSearchText = ""
 
     @Query(sort: \Folder.name) private var folders: [Folder]
     @Query private var allBookmarks: [Bookmark]
 
     private var isEditing: Bool { bookmarkToEdit != nil }
+
+    private var filteredFolders: [Folder] {
+        let hierarchical = Folder.hierarchicalSort(folders)
+        guard !folderSearchText.isEmpty else { return hierarchical }
+        let query = folderSearchText.lowercased()
+        return hierarchical.filter {
+            $0.name.lowercased().contains(query) || $0.path.lowercased().contains(query)
+        }
+    }
 
     private var isValidURL: Bool {
         URLValidator.isValid(url)
@@ -71,6 +81,24 @@ struct BookmarkFormView: View {
                     }
                 }
                 Section("Folder") {
+                    if folders.count > 5 {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.secondary)
+                            TextField("Search folders", text: $folderSearchText)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                            if !folderSearchText.isEmpty {
+                                Button {
+                                    folderSearchText = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                     Button {
                         selectedFolder = nil
                     } label: {
@@ -84,7 +112,7 @@ struct BookmarkFormView: View {
                             }
                         }
                     }
-                    ForEach(Folder.hierarchicalSort(folders)) { folder in
+                    ForEach(filteredFolders) { folder in
                         Button {
                             selectedFolder = folder
                         } label: {

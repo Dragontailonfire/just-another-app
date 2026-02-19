@@ -19,6 +19,7 @@ struct FolderFormView: View {
     @State private var selectedParent: Folder?
     @State private var selectedColor: String = "blue"
     @State private var selectedIcon: String = "folder.fill"
+    @State private var parentSearchText = ""
 
     @Query(sort: \Folder.name) private var allFolders: [Folder]
 
@@ -26,6 +27,15 @@ struct FolderFormView: View {
 
     private var availableParents: [Folder] {
         allFolders.filter { $0.persistentModelID != folderToEdit?.persistentModelID }
+    }
+
+    private var filteredParents: [Folder] {
+        let hierarchical = Folder.hierarchicalSort(availableParents)
+        guard !parentSearchText.isEmpty else { return hierarchical }
+        let query = parentSearchText.lowercased()
+        return hierarchical.filter {
+            $0.name.lowercased().contains(query) || $0.path.lowercased().contains(query)
+        }
     }
 
     var body: some View {
@@ -77,6 +87,24 @@ struct FolderFormView: View {
                     .padding(.vertical, 4)
                 }
                 Section("Parent Folder") {
+                    if availableParents.count > 5 {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.secondary)
+                            TextField("Search folders", text: $parentSearchText)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                            if !parentSearchText.isEmpty {
+                                Button {
+                                    parentSearchText = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                     Button {
                         selectedParent = nil
                     } label: {
@@ -90,7 +118,7 @@ struct FolderFormView: View {
                             }
                         }
                     }
-                    ForEach(Folder.hierarchicalSort(availableParents)) { folder in
+                    ForEach(filteredParents) { folder in
                         Button {
                             selectedParent = folder
                         } label: {

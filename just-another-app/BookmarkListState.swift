@@ -24,7 +24,6 @@ enum SortMode: String, CaseIterable {
 class BookmarkListState {
     var viewMode: ViewMode = .list
     var sortMode: SortMode = .newestFirst
-    var searchText: String = ""
     var filterFavoritesOnly: Bool = false
     var filterFolder: Folder? = nil
     var filterDeadLinksOnly: Bool = false

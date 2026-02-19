@@ -20,9 +20,11 @@ Reference for implementing the next UI redesign pass. Based on Apple HIG, WWDC 2
 ## What We've Already Applied
 
 - ✅ `.glassEffect()` on pickers in `FolderFormView`
-- ✅ `GlassEffectContainer` wrapping the card grid in `BookmarksTab`
+- ✅ Removed `GlassEffectContainer` from the card grid in `BookmarksTab` (v1.7.0) — cards use system backgrounds, no glass content inside
 - ✅ Removed `.glassEffect()` from `BookmarkCardView` (v1.6.0) — cards are content, not navigation
 - ✅ iOS 26 deployment target; standard components (nav bar, tab bar) auto-adopt glass
+- ✅ `Tab(role: .search)` for the Search tab (v1.7.0) — search icon in tab bar, morphs into a full-width search field on tap
+- ✅ Individual `ToolbarItem` declarations in `BookmarksTab` (v1.7.0) — adjacent icon buttons auto-grouped under glass by iOS 26
 
 ---
 

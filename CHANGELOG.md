@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-02-19
+
+### Added
+- **Search tab** — unified search across all bookmarks and folders via a dedicated tab with `Tab(role: .search)`, the canonical iOS 26 pattern where the search icon lives in the tab bar and morphs into a full-width search field on tap
+- **Search results** — matching bookmarks and folders shown in two collapsible sections with result counts; tap a section header to expand/collapse; sections auto-expand on new queries
+- **Undo delete from search** — bookmark deletions from the search tab include the same 4-second Undo toast
+- **Folder picker search** — inline search field in the Folder picker (bookmark form and folder parent picker) when there are more than 5 folders; filters by name and full hierarchical path; includes a clear (✕) button
+
+### Changed
+- **Bookmarks tab** — search bar removed; use the Search tab for cross-library search; per-tab filter menu (favorites, dead links, folder) remains
+- **Folders tab** — search bar removed; drag-to-reorder is now always enabled (was disabled during search)
+- **Toolbar grouping** — BookmarksTab toolbar items declared as individual `ToolbarItem` so iOS 26 auto-groups adjacent icon buttons under a shared glass background
+- **Card grid** — removed redundant `GlassEffectContainer` wrapper; cards already use system backgrounds (no glass content inside)
+
+### Technical
+- New file: `SearchTab.swift` — `@Query` all bookmarks + folders, `.searchable()` bound to `searchText`, `matchingBookmarks`/`matchingFolders` computed properties, `Section(isExpanded:)` with custom chevron header buttons, undo delete, tap action dispatch
+- `MainTabView`: `Tab(role: .search)` as 4th tab — iOS 26 auto-positions and morphs the search icon
+- `BookmarksTab`: removed `.searchable()` and search filter from `filteredAndSorted`; `ToolbarItemGroup` → individual `ToolbarItem` declarations; `GlassEffectContainer` removed from card grid
+- `FoldersTab`: removed `searchText` state, `displayedFolders` computed property, and `.searchable()`; `.onMove` always enabled
+- `BookmarkListState`: removed `searchText` property
+- `BookmarkFormView` + `FolderFormView`: `folderSearchText`/`parentSearchText` state, `filteredFolders`/`filteredParents` computed properties; inline HStack search row (magnifyingglass + TextField + conditional xmark.circle.fill clear) shown when folder count > 5
+
 ## [1.6.0] - 2026-02-19
 
 ### Added

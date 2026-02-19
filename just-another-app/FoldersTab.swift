@@ -16,19 +16,9 @@ struct FoldersTab: View {
     @State private var showingAddFolder = false
     @State private var folderToEdit: Folder?
     @State private var folderToDelete: Folder?
-    @State private var searchText = ""
 
     private var topLevelFolders: [Folder] {
         allFolders.filter { $0.parent == nil }
-    }
-
-    private var displayedFolders: [Folder] {
-        if searchText.isEmpty {
-            return topLevelFolders
-        }
-        // When searching, show all matching folders regardless of hierarchy
-        let query = searchText.lowercased()
-        return allFolders.filter { $0.name.lowercased().contains(query) }
     }
 
     var body: some View {
@@ -40,11 +30,9 @@ struct FoldersTab: View {
                         systemImage: "folder",
                         description: Text("Tap + to create your first folder.")
                     )
-                } else if displayedFolders.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
                 } else {
                     List {
-                        ForEach(displayedFolders) { folder in
+                        ForEach(topLevelFolders) { folder in
                             NavigationLink(value: folder) {
                                 FolderRowView(folder: folder)
                             }
@@ -76,11 +64,10 @@ struct FoldersTab: View {
                                 }
                             }
                         }
-                        .onMove(perform: searchText.isEmpty ? moveFolders : nil)
+                        .onMove(perform: moveFolders)
                     }
                 }
             }
-            .searchable(text: $searchText, prompt: "Search folders")
             .navigationTitle("Folders")
             .navigationDestination(for: Folder.self) { folder in
                 FolderDetailView(folder: folder)
@@ -119,7 +106,7 @@ struct FoldersTab: View {
     // MARK: - Reorder
 
     private func moveFolders(from source: IndexSet, to destination: Int) {
-        var ordered = displayedFolders
+        var ordered = topLevelFolders
         ordered.move(fromOffsets: source, toOffset: destination)
         for (index, folder) in ordered.enumerated() {
             folder.sortOrder = index

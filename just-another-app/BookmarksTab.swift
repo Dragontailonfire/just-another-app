@@ -39,16 +39,6 @@ struct BookmarksTab: View {
     private var filteredAndSorted: [Bookmark] {
         var result = allBookmarks
 
-        // Search
-        if !listState.searchText.isEmpty {
-            let query = listState.searchText.lowercased()
-            result = result.filter {
-                $0.name.lowercased().contains(query) ||
-                $0.url.lowercased().contains(query) ||
-                $0.descriptionText.lowercased().contains(query)
-            }
-        }
-
         // Filter: favorites
         if listState.filterFavoritesOnly {
             result = result.filter { $0.isFavorite }
@@ -91,7 +81,11 @@ struct BookmarksTab: View {
                         description: Text("Tap + to add your first bookmark.")
                     )
                 } else if filteredAndSorted.isEmpty {
-                    ContentUnavailableView.search(text: listState.searchText)
+                    ContentUnavailableView(
+                        "No Results",
+                        systemImage: "line.3.horizontal.decrease.circle",
+                        description: Text("No bookmarks match the active filters.")
+                    )
                 } else {
                     switch listState.viewMode {
                     case .list:
@@ -130,7 +124,6 @@ struct BookmarksTab: View {
             .animation(.spring(response: 0.3), value: showingUndoBanner)
             .animation(.default, value: listState.viewMode)
             .navigationTitle(listState.isSelectMode ? "\(listState.selectedBookmarkIDs.count) Selected" : "Bookmarks")
-            .searchable(text: $listState.searchText, prompt: "Search bookmarks")
             .toolbar {
                 if listState.isSelectMode {
                     ToolbarItemGroup(placement: .topBarTrailing) {
@@ -164,19 +157,19 @@ struct BookmarksTab: View {
                         .disabled(listState.selectedBookmarkIDs.isEmpty)
                     }
                 } else {
-                    ToolbarItemGroup(placement: .topBarLeading) {
-                        filterMenu
-                    }
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        if !allBookmarks.isEmpty {
+                    ToolbarItem(placement: .topBarLeading) { filterMenu }
+                    if !allBookmarks.isEmpty {
+                        ToolbarItem(placement: .topBarTrailing) {
                             Button {
                                 listState.isSelectMode = true
                             } label: {
                                 Image(systemName: "checkmark.circle")
                             }
                         }
-                        sortMenu
-                        viewModeToggle
+                    }
+                    ToolbarItem(placement: .topBarTrailing) { sortMenu }
+                    ToolbarItem(placement: .topBarTrailing) { viewModeToggle }
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button(action: { showingAddForm = true }) {
                             Image(systemName: "plus")
                         }
@@ -236,7 +229,6 @@ struct BookmarksTab: View {
     // MARK: - Card Grid
 
     private var cardGrid: some View {
-        GlassEffectContainer {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible(minimum: 100)), GridItem(.flexible(minimum: 100))], spacing: 8) {
                 ForEach(filteredAndSorted) { bookmark in
@@ -309,7 +301,6 @@ struct BookmarksTab: View {
                 }
             }
             .padding()
-        }
         }
     }
 

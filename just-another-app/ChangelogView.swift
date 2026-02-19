@@ -15,6 +15,22 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.7.0",
+                        date: "February 19, 2026",
+                        items: [
+                            "Search tab — unified search across all bookmarks and folders; search icon in tab bar morphs into a full-width field on tap (iOS 26 design)",
+                            "Search results show collapsible sections for Bookmarks and Folders with result counts — tap a section header to expand or collapse",
+                            "Tap a bookmark in search respects your tap action setting; tap a folder navigates into it",
+                            "Undo delete available from the search tab",
+                            "Folder picker search — filter the folder list when assigning a bookmark or parent folder (appears when you have more than 5 folders)",
+                            "Folders tab drag-to-reorder now always enabled",
+                            "Toolbar buttons auto-grouped under shared glass background (iOS 26)",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.6.0",
                         date: "February 19, 2026",
                         items: [
