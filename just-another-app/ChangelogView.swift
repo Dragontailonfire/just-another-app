@@ -15,6 +15,22 @@ struct ChangelogView: View {
             List {
                 Section {
                     releaseSection(
+                        version: "1.8.0",
+                        date: "February 28, 2026",
+                        items: [
+                            "Reading List — a dedicated read-now queue; tap the book icon in the Bookmarks toolbar to open it",
+                            "Add items by long-pressing any bookmark and choosing \"Add to Reading List\"",
+                            "Share from any app — when sharing a URL, pick Bookmark or Reading List from a segmented picker",
+                            "Swipe to remove (with undo) or save to bookmarks; item stays until the bookmark is confirmed saved",
+                            "Configurable limit — set 5–20 items in Settings › Reading List; hitting the cap asks to remove the oldest",
+                            "Widget now shows your Reading List (up next) instead of recent bookmarks",
+                            "Reading List quick action — long-press the app icon to jump straight to the list",
+                        ]
+                    )
+                }
+
+                Section {
+                    releaseSection(
                         version: "1.7.0",
                         date: "February 19, 2026",
                         items: [

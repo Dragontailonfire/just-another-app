@@ -9,34 +9,33 @@ import WidgetKit
 import SwiftUI
 import SwiftData
 
-struct BookmarkSnapshot: Identifiable {
+struct ReadingListSnapshot: Identifiable {
     let id: String
     let name: String
     let url: String
-    let isFavorite: Bool
     let faviconData: Data?
 }
 
-struct BookmarkEntry: TimelineEntry {
+struct ReadingListEntry: TimelineEntry {
     let date: Date
-    let bookmarks: [BookmarkSnapshot]
+    let items: [ReadingListSnapshot]
 }
 
-struct BookmarkProvider: TimelineProvider {
-    func placeholder(in context: Context) -> BookmarkEntry {
-        BookmarkEntry(date: .now, bookmarks: [
-            BookmarkSnapshot(id: "1", name: "Example", url: "https://example.com", isFavorite: true, faviconData: nil),
-            BookmarkSnapshot(id: "2", name: "Apple", url: "https://apple.com", isFavorite: false, faviconData: nil),
+struct ReadingListProvider: TimelineProvider {
+    func placeholder(in context: Context) -> ReadingListEntry {
+        ReadingListEntry(date: .now, items: [
+            ReadingListSnapshot(id: "1", name: "Article to Read", url: "https://example.com", faviconData: nil),
+            ReadingListSnapshot(id: "2", name: "Interesting Post", url: "https://apple.com", faviconData: nil),
         ])
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (BookmarkEntry) -> Void) {
-        let entry = BookmarkEntry(date: .now, bookmarks: fetchBookmarks(count: maxCount(for: context.family)))
+    func getSnapshot(in context: Context, completion: @escaping (ReadingListEntry) -> Void) {
+        let entry = ReadingListEntry(date: .now, items: fetchItems(count: maxCount(for: context.family)))
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<BookmarkEntry>) -> Void) {
-        let entry = BookmarkEntry(date: .now, bookmarks: fetchBookmarks(count: maxCount(for: context.family)))
+    func getTimeline(in context: Context, completion: @escaping (Timeline<ReadingListEntry>) -> Void) {
+        let entry = ReadingListEntry(date: .now, items: fetchItems(count: maxCount(for: context.family)))
         let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: .now)!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
@@ -50,26 +49,21 @@ struct BookmarkProvider: TimelineProvider {
         }
     }
 
-    private func fetchBookmarks(count: Int) -> [BookmarkSnapshot] {
+    private func fetchItems(count: Int) -> [ReadingListSnapshot] {
         do {
             let container = SharedModelContainer.create()
             let context = ModelContext(container)
-            var descriptor = FetchDescriptor<Bookmark>(sortBy: [
-                SortDescriptor(\Bookmark.createdDate, order: .reverse),
+            var descriptor = FetchDescriptor<ReadingListItem>(sortBy: [
+                SortDescriptor(\ReadingListItem.addedDate, order: .forward),
             ])
-            let allBookmarks = try context.fetch(descriptor)
-            // Favorites first, then recent
-            let bookmarks = allBookmarks.sorted { a, b in
-                if a.isFavorite != b.isFavorite { return a.isFavorite }
-                return a.createdDate > b.createdDate
-            }
-            return Array(bookmarks.prefix(count)).map { bookmark in
-                BookmarkSnapshot(
-                    id: bookmark.url,
-                    name: bookmark.name,
-                    url: bookmark.url,
-                    isFavorite: bookmark.isFavorite,
-                    faviconData: bookmark.faviconData
+            descriptor.fetchLimit = count
+            let items = try context.fetch(descriptor)
+            return items.map { item in
+                ReadingListSnapshot(
+                    id: item.url,
+                    name: item.name,
+                    url: item.url,
+                    faviconData: item.faviconData
                 )
             }
         } catch {
@@ -79,60 +73,65 @@ struct BookmarkProvider: TimelineProvider {
 }
 
 struct SmallWidgetView: View {
-    let entry: BookmarkEntry
+    let entry: ReadingListEntry
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ForEach(entry.bookmarks.prefix(4)) { bookmark in
-                if let url = URL(string: bookmark.url) {
-                    Link(destination: url) {
-                        HStack(spacing: 6) {
-                            faviconView(data: bookmark.faviconData, size: 14)
-                            Text(bookmark.name)
-                                .font(.caption)
-                                .lineLimit(1)
-                            Spacer()
-                            if bookmark.isFavorite {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 8))
-                                    .foregroundStyle(.yellow)
+            if entry.items.isEmpty {
+                Spacer()
+                Label("Reading List Empty", systemImage: "text.book.closed")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            } else {
+                ForEach(entry.items.prefix(4)) { item in
+                    if let url = URL(string: item.url) {
+                        Link(destination: url) {
+                            HStack(spacing: 6) {
+                                faviconView(data: item.faviconData, size: 14)
+                                Text(item.name)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                Spacer()
                             }
                         }
                     }
                 }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
         }
         .padding()
     }
 }
 
 struct MediumWidgetView: View {
-    let entry: BookmarkEntry
+    let entry: ReadingListEntry
 
     var body: some View {
-        let columns = [GridItem(.flexible()), GridItem(.flexible())]
-        LazyVGrid(columns: columns, spacing: 6) {
-            ForEach(entry.bookmarks.prefix(6)) { bookmark in
-                if let url = URL(string: bookmark.url) {
-                    Link(destination: url) {
-                        HStack(spacing: 4) {
-                            faviconView(data: bookmark.faviconData, size: 14)
-                            Text(bookmark.name)
-                                .font(.caption)
-                                .lineLimit(1)
-                            Spacer()
-                            if bookmark.isFavorite {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 8))
-                                    .foregroundStyle(.yellow)
+        if entry.items.isEmpty {
+            Label("Reading List Empty", systemImage: "text.book.closed")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding()
+        } else {
+            let columns = [GridItem(.flexible()), GridItem(.flexible())]
+            LazyVGrid(columns: columns, spacing: 6) {
+                ForEach(entry.items.prefix(6)) { item in
+                    if let url = URL(string: item.url) {
+                        Link(destination: url) {
+                            HStack(spacing: 4) {
+                                faviconView(data: item.faviconData, size: 14)
+                                Text(item.name)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                Spacer()
                             }
                         }
                     }
                 }
             }
+            .padding()
         }
-        .padding()
     }
 }
 
@@ -154,7 +153,7 @@ private func faviconView(data: Data?, size: CGFloat) -> some View {
 
 struct BookmarkWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
-    var entry: BookmarkProvider.Entry
+    var entry: ReadingListProvider.Entry
 
     var body: some View {
         switch family {
@@ -172,12 +171,12 @@ struct BookmarkWidget: Widget {
     let kind: String = "BookmarkWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: BookmarkProvider()) { entry in
+        StaticConfiguration(kind: kind, provider: ReadingListProvider()) { entry in
             BookmarkWidgetEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
-        .configurationDisplayName("Bookmarks")
-        .description("Quick access to your bookmarks.")
+        .configurationDisplayName("Reading List")
+        .description("Quick access to your reading list.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

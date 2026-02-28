@@ -13,6 +13,8 @@ struct SettingsTab: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var bookmarks: [Bookmark]
     @Query private var folders: [Folder]
+    @Query private var readingListItems: [ReadingListItem]
+    @AppStorage("readingListLimit") private var readingListLimit = 10
 
     @State private var showingImporter = false
     @State private var showingImportConfirm = false
@@ -70,6 +72,22 @@ struct SettingsTab: View {
                 Section("Stats") {
                     LabeledContent("Bookmarks", value: "\(bookmarks.count)")
                     LabeledContent("Folders", value: "\(folders.count)")
+                }
+
+                // MARK: Reading List
+                Section {
+                    LabeledContent("Items in List", value: "\(readingListItems.count)")
+                    Picker("Item Limit", selection: $readingListLimit) {
+                        ForEach(5...20, id: \.self) { n in
+                            Text("\(n)").tag(n)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(height: 100)
+                } header: {
+                    Text("Reading List")
+                } footer: {
+                    Text("Maximum number of items allowed in your reading list at one time.")
                 }
 
                 // MARK: Gestures

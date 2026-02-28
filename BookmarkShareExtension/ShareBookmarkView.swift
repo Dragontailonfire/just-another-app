@@ -9,6 +9,11 @@ import SwiftUI
 import SwiftData
 import LinkPresentation
 
+private enum SaveDestination: String, CaseIterable {
+    case bookmark    = "Bookmark"
+    case readingList = "Reading List"
+}
+
 struct ShareBookmarkView: View {
     let url: URL
     let onDismiss: () -> Void
@@ -22,6 +27,7 @@ struct ShareBookmarkView: View {
     @State private var isFetchingMetadata = false
     @State private var fetchedFaviconData: Data?
     @State private var showingDuplicateAlert = false
+    @State private var saveDestination: SaveDestination = .bookmark
 
     private var isValidURL: Bool {
         URLValidator.isValid(url.absoluteString)
@@ -49,42 +55,50 @@ struct ShareBookmarkView: View {
                                 .controlSize(.small)
                         }
                     }
-                }
-
-                Section("Folder") {
-                    Button {
-                        selectedFolder = nil
-                    } label: {
-                        HStack {
-                            Text("None")
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            if selectedFolder == nil {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(.blue)
-                            }
+                    Picker("Save to", selection: $saveDestination) {
+                        ForEach(SaveDestination.allCases, id: \.self) { dest in
+                            Text(dest.rawValue).tag(dest)
                         }
                     }
-                    ForEach(Folder.hierarchicalSort(folders)) { folder in
+                    .pickerStyle(.segmented)
+                }
+
+                if saveDestination == .bookmark {
+                    Section("Folder") {
                         Button {
-                            selectedFolder = folder
+                            selectedFolder = nil
                         } label: {
                             HStack {
-                                Image(systemName: folder.iconName)
-                                    .foregroundStyle(FolderAppearance.color(for: folder.colorName))
-                                Text(folder.path)
+                                Text("None")
                                     .foregroundStyle(.primary)
                                 Spacer()
-                                if selectedFolder?.persistentModelID == folder.persistentModelID {
+                                if selectedFolder == nil {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(.blue)
+                                }
+                            }
+                        }
+                        ForEach(Folder.hierarchicalSort(folders)) { folder in
+                            Button {
+                                selectedFolder = folder
+                            } label: {
+                                HStack {
+                                    Image(systemName: folder.iconName)
+                                        .foregroundStyle(FolderAppearance.color(for: folder.colorName))
+                                    Text(folder.path)
+                                        .foregroundStyle(.primary)
+                                    Spacer()
+                                    if selectedFolder?.persistentModelID == folder.persistentModelID {
+                                        Image(systemName: "checkmark")
+                                            .foregroundStyle(.blue)
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            .navigationTitle("Save Bookmark")
+            .navigationTitle(saveDestination == .bookmark ? "Save Bookmark" : "Add to Reading List")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -108,12 +122,17 @@ struct ShareBookmarkView: View {
     }
 
     private func save() {
-        let trimmedURL = url.absoluteString.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        if allBookmarks.contains(where: { $0.url.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == trimmedURL }) {
-            showingDuplicateAlert = true
-            return
+        switch saveDestination {
+        case .bookmark:
+            let trimmedURL = url.absoluteString.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            if allBookmarks.contains(where: { $0.url.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == trimmedURL }) {
+                showingDuplicateAlert = true
+                return
+            }
+            insertBookmark()
+        case .readingList:
+            insertReadingListItem()
         }
-        insertBookmark()
     }
 
     private func insertBookmark() {
@@ -124,6 +143,13 @@ struct ShareBookmarkView: View {
             faviconData: fetchedFaviconData
         )
         modelContext.insert(bookmark)
+        try? modelContext.save()
+        onDismiss()
+    }
+
+    private func insertReadingListItem() {
+        let item = ReadingListItem(url: url.absoluteString, name: name, faviconData: fetchedFaviconData)
+        modelContext.insert(item)
         try? modelContext.save()
         onDismiss()
     }

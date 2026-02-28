@@ -21,6 +21,7 @@ enum SharedModelContainer {
         let schema = Schema([
             Bookmark.self,
             Folder.self,
+            ReadingListItem.self,
         ])
 
         let storeURL = containerURL().appendingPathComponent("bookmarks.store")

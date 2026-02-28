@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-02-28
+
+### Added
+- **Reading List** — a dedicated "read now" queue separate from the bookmark archive; add any bookmark via long-press context menu anywhere in the app
+- **Reading List sheet** — tap the book icon (`text.book.closed`) in the Bookmarks tab toolbar to open your reading list; items shown oldest-first (up next at top); swipe trailing to remove (with undo), swipe leading to save as bookmark; full context menu per item
+- **Save to Bookmarks from Reading List** — promotes a reading list item to a permanent bookmark with a pre-filled form; item is only removed from the reading list after the bookmark is successfully saved (Cancel keeps it)
+- **Share Extension: Reading List** — when sharing any URL from Safari or another app, a segmented picker lets you choose "Bookmark" or "Reading List"; folder picker shown only for Bookmark destination; navigation title updates dynamically
+- **Configurable item limit** — set the reading list cap to 5–20 items in Settings › Reading List; hitting the cap shows an alert offering to remove the oldest item automatically
+- **Item count badge** — Reading List toolbar shows current / maximum count (e.g. "3 / 10") at a glance
+- **Undo remove** — reading list removals include the same 4-second Undo toast as bookmark deletions
+- **Widget pivot** — Home Screen Widget now shows your Reading List ("up next") instead of recent bookmarks; empty state shown when the list is clear
+- **Reading List quick action** — long-press the app icon to jump straight to the Reading List (opens as a sheet over the Bookmarks tab)
+
+### Changed
+- **Tab bar** — reduced from 5 to 4 tabs (Bookmarks, Folders, Settings, Search); Reading List is now a sheet, not a tab, avoiding congestion
+
+### Technical
+- New file: `ReadingListItem.swift` — `@Model` with url, name, faviconData, addedDate; added to `SharedModelContainer` schema and both extension targets' `PBXFileSystemSynchronizedBuildFileExceptionSet`
+- New file: `ReadingListRowView.swift` — 32 px favicon, name, URL, relative date added; no folder badge or favorite star
+- New file: `ReadingListTab.swift` — `@Query(sort: \ReadingListItem.addedDate)` oldest-first; `RemovedReadingListItem` snapshot for undo; `ReadingListSaveInfo: Identifiable, Equatable` for `.sheet(item:)`; `pendingSaveSource: ReadingListItem?` holds the item pending deletion until `onSave` fires; `.onChange(of: itemToSave)` clears `pendingSaveSource` on cancel; "Done" dismiss button; footer hint "Add items by long-pressing any bookmark."
+- `BookmarkFormView`: added `onSave: (() -> Void)?` callback, called in `insertNewBookmark()` before `dismiss()`; also added `startingURL`/`startingName`/`startingFaviconData` pre-fill parameters
+- `BookmarksTab`: `@Binding var showReadingList: Bool`; `text.book.closed` toolbar button sets it true; `.sheet(isPresented: $showReadingList) { ReadingListTab() }`
+- `MainTabView`: removed Reading List tab; added `@State private var showingReadingList`; passes `showReadingList: $showingReadingList` to `BookmarksTab`; `.readingList` quick action switches to bookmarks tab then opens the sheet with 0.3 s delay; tab bar now has 4 tabs
+- `ShareBookmarkView`: added `SaveDestination` enum (Bookmark/ReadingList); segmented `Picker` in Details section; Folder section conditionally shown; dynamic `navigationTitle`; `insertReadingListItem()` inserts a `ReadingListItem` and saves
+- `SettingsTab`: new "Reading List" section with item count and `.pickerStyle(.wheel)` Picker (5–20 range) for cap; `@AppStorage("readingListLimit")` shared across all views
+- `BookmarkWidget`: pivoted from `Bookmark` to `ReadingListItem`; renamed to `ReadingListSnapshot`/`ReadingListEntry`/`ReadingListProvider`; fetches sorted by `addedDate` ascending; display name "Reading List"; empty-state views for small and medium
+- `BookmarkRowView`: added `onAddToReadingList: (() -> Void)?`; "Add to Reading List" context menu item
+- `BookmarkListView`: added `onAddToReadingList` passthrough
+- `BookmarksTab`, `FolderDetailView`, `SearchTab`: `addToReadingList`/`insertIntoReadingList` helpers, `pendingReadingListAdd` state, at-capacity alert
+- `just_another_appApp`: `QuickActionRoute.readingList` case; "Reading List" home screen shortcut item
+
 ## [1.7.0] - 2026-02-19
 
 ### Added

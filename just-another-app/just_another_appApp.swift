@@ -11,6 +11,7 @@ import SwiftData
 enum QuickActionRoute: String {
     case addBookmark = "AddBookmark"
     case favorites = "Favorites"
+    case readingList = "ReadingList"
 }
 
 @Observable
@@ -56,6 +57,13 @@ struct just_another_appApp: App {
                 localizedTitle: "View Favorites",
                 localizedSubtitle: nil,
                 icon: UIApplicationShortcutIcon(type: .favorite),
+                userInfo: nil
+            ),
+            UIApplicationShortcutItem(
+                type: QuickActionRoute.readingList.rawValue,
+                localizedTitle: "Reading List",
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "text.book.closed"),
                 userInfo: nil
             ),
         ]

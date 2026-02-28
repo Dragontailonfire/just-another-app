@@ -15,16 +15,21 @@ struct BookmarksTab: View {
     @Query(sort: \Folder.name) private var folders: [Folder]
 
     @Binding var filterFavoritesOnAppear: Bool
+    @Binding var showReadingList: Bool
     @State private var listState = BookmarkListState()
     @AppStorage("tapAction") private var tapActionRaw = TapAction.openInApp.rawValue
+    @AppStorage("readingListLimit") private var readingListLimit = 10
+    @Query(sort: \ReadingListItem.addedDate) private var readingListItems: [ReadingListItem]
     @State private var deletedBookmark: BookmarkSnapshot? = nil
     @State private var showingUndoBanner = false
     @State private var undoTask: Task<Void, Never>? = nil
+    @State private var pendingReadingListAdd: Bookmark?
 
     private var tapAction: TapAction { TapAction(rawValue: tapActionRaw) ?? .openInApp }
 
-    init(filterFavoritesOnAppear: Binding<Bool> = .constant(false)) {
+    init(filterFavoritesOnAppear: Binding<Bool> = .constant(false), showReadingList: Binding<Bool> = .constant(false)) {
         _filterFavoritesOnAppear = filterFavoritesOnAppear
+        _showReadingList = showReadingList
     }
 
     private var hierarchicalFolders: [Folder] {
@@ -95,7 +100,8 @@ struct BookmarksTab: View {
                             onSelect: { openBookmark($0) },
                             onEdit: { bookmarkToEdit = $0 },
                             onDelete: { scheduleDelete($0) },
-                            onOpenURL: { urlToOpen = IdentifiableURL(url: $0) }
+                            onOpenURL: { urlToOpen = IdentifiableURL(url: $0) },
+                            onAddToReadingList: { addToReadingList($0) }
                         )
                         .transition(.opacity)
                     case .card:
@@ -170,6 +176,13 @@ struct BookmarksTab: View {
                     ToolbarItem(placement: .topBarTrailing) { sortMenu }
                     ToolbarItem(placement: .topBarTrailing) { viewModeToggle }
                     ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            showReadingList = true
+                        } label: {
+                            Image(systemName: "text.book.closed")
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
                         Button(action: { showingAddForm = true }) {
                             Image(systemName: "plus")
                         }
@@ -180,6 +193,9 @@ struct BookmarksTab: View {
             .sheet(item: $urlToOpen) { item in
                 SafariView(url: item.url)
                     .ignoresSafeArea()
+            }
+            .sheet(isPresented: $showReadingList) {
+                ReadingListTab()
             }
             .sheet(isPresented: $showingAddForm) {
                 BookmarkFormView()
@@ -223,6 +239,24 @@ struct BookmarksTab: View {
                     filterFavoritesOnAppear = false
                 }
             }
+            .alert("Reading List is Full", isPresented: Binding(
+                get: { pendingReadingListAdd != nil },
+                set: { if !$0 { pendingReadingListAdd = nil } }
+            )) {
+                Button("Cancel", role: .cancel) { pendingReadingListAdd = nil }
+                Button("Remove Oldest & Add") {
+                    if let bookmark = pendingReadingListAdd {
+                        insertIntoReadingList(bookmark, removingOldest: true)
+                    }
+                    pendingReadingListAdd = nil
+                }
+            } message: {
+                if let oldest = readingListItems.first {
+                    Text("Remove \"\(oldest.name)\" to make room?")
+                } else {
+                    Text("The reading list is full.")
+                }
+            }
         }
     }
 
@@ -261,6 +295,11 @@ struct BookmarksTab: View {
                                     bookmark.isFavorite ? "Unfavorite" : "Favorite",
                                     systemImage: bookmark.isFavorite ? "star.slash" : "star.fill"
                                 )
+                            }
+                            Button {
+                                addToReadingList(bookmark)
+                            } label: {
+                                Label("Add to Reading List", systemImage: "text.book.closed")
                             }
                             Button {
                                 UIPasteboard.general.string = bookmark.url
@@ -455,6 +494,25 @@ struct BookmarksTab: View {
         }
         listState.isSelectMode = false
         listState.selectedBookmarkIDs.removeAll()
+    }
+
+    // MARK: - Reading List
+
+    private func addToReadingList(_ bookmark: Bookmark) {
+        if readingListItems.count >= readingListLimit {
+            pendingReadingListAdd = bookmark
+        } else {
+            insertIntoReadingList(bookmark, removingOldest: false)
+        }
+    }
+
+    private func insertIntoReadingList(_ bookmark: Bookmark, removingOldest: Bool) {
+        if removingOldest, let oldest = readingListItems.first {
+            modelContext.delete(oldest)
+        }
+        let item = ReadingListItem(url: bookmark.url, name: bookmark.name, faviconData: bookmark.faviconData)
+        modelContext.insert(item)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 }
 

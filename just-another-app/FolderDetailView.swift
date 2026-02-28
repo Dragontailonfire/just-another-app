@@ -24,6 +24,9 @@ struct FolderDetailView: View {
     @State private var showingUndoBanner = false
     @State private var undoTask: Task<Void, Never>? = nil
     @AppStorage("tapAction") private var tapActionRaw = TapAction.openInApp.rawValue
+    @AppStorage("readingListLimit") private var readingListLimit = 10
+    @Query(sort: \ReadingListItem.addedDate) private var readingListItems: [ReadingListItem]
+    @State private var pendingReadingListAdd: Bookmark?
 
     private var tapAction: TapAction { TapAction(rawValue: tapActionRaw) ?? .openInApp }
 
@@ -97,7 +100,8 @@ struct FolderDetailView: View {
                             },
                             onDelete: { scheduleDelete(bookmark) },
                             onEdit: { bookmarkToEdit = bookmark },
-                            onOpenURL: { urlToOpen = IdentifiableURL(url: $0) }
+                            onOpenURL: { urlToOpen = IdentifiableURL(url: $0) },
+                            onAddToReadingList: { addToReadingList(bookmark) }
                         )
                         .contentShape(Rectangle())
                         .onTapGesture { openBookmark(bookmark) }
@@ -174,6 +178,24 @@ struct FolderDetailView: View {
         } message: {
             Text("Are you sure you want to delete \"\(subfolderToDelete?.name ?? "")\"?")
         }
+        .alert("Reading List is Full", isPresented: Binding(
+            get: { pendingReadingListAdd != nil },
+            set: { if !$0 { pendingReadingListAdd = nil } }
+        )) {
+            Button("Cancel", role: .cancel) { pendingReadingListAdd = nil }
+            Button("Remove Oldest & Add") {
+                if let bookmark = pendingReadingListAdd {
+                    insertIntoReadingList(bookmark, removingOldest: true)
+                }
+                pendingReadingListAdd = nil
+            }
+        } message: {
+            if let oldest = readingListItems.first {
+                Text("Remove \"\(oldest.name)\" to make room?")
+            } else {
+                Text("The reading list is full.")
+            }
+        }
     }
 
     // MARK: - Tap Action
@@ -225,5 +247,24 @@ struct FolderDetailView: View {
         modelContext.insert(bookmark)
         withAnimation { showingUndoBanner = false }
         deletedBookmark = nil
+    }
+
+    // MARK: - Reading List
+
+    private func addToReadingList(_ bookmark: Bookmark) {
+        if readingListItems.count >= readingListLimit {
+            pendingReadingListAdd = bookmark
+        } else {
+            insertIntoReadingList(bookmark, removingOldest: false)
+        }
+    }
+
+    private func insertIntoReadingList(_ bookmark: Bookmark, removingOldest: Bool) {
+        if removingOldest, let oldest = readingListItems.first {
+            modelContext.delete(oldest)
+        }
+        let item = ReadingListItem(url: bookmark.url, name: bookmark.name, faviconData: bookmark.faviconData)
+        modelContext.insert(item)
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
 }

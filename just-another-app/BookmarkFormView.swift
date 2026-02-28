@@ -16,6 +16,10 @@ struct BookmarkFormView: View {
 
     var bookmarkToEdit: Bookmark?
     var defaultFolder: Folder?
+    var startingURL: String? = nil
+    var startingName: String? = nil
+    var startingFaviconData: Data? = nil
+    var onSave: (() -> Void)? = nil
 
     @State private var url: String = "https://"
     @State private var name: String = ""
@@ -162,6 +166,12 @@ struct BookmarkFormView: View {
             fetchedFaviconData = bookmark.faviconData
         } else {
             selectedFolder = defaultFolder
+            if let startingURL {
+                url = startingURL
+                fetchedFaviconData = startingFaviconData
+                if let startingName { name = startingName }
+                fetchMetadataDebounced(for: startingURL)
+            }
         }
     }
 
@@ -199,6 +209,7 @@ struct BookmarkFormView: View {
         modelContext.insert(bookmark)
         SpotlightService.index(bookmark: bookmark)
         WidgetCenter.shared.reloadAllTimelines()
+        onSave?()
         dismiss()
     }
 

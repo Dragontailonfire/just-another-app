@@ -12,11 +12,12 @@ struct MainTabView: View {
     @State private var selectedTab = "bookmarks"
     @State private var showingAddBookmark = false
     @State private var filterFavoritesOnAppear = false
+    @State private var showingReadingList = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Bookmarks", systemImage: "bookmark.fill", value: "bookmarks") {
-                BookmarksTab(filterFavoritesOnAppear: $filterFavoritesOnAppear)
+                BookmarksTab(filterFavoritesOnAppear: $filterFavoritesOnAppear, showReadingList: $showingReadingList)
             }
             Tab("Folders", systemImage: "folder.fill", value: "folders") {
                 FoldersTab()
@@ -41,6 +42,11 @@ struct MainTabView: View {
             case .favorites:
                 selectedTab = "bookmarks"
                 filterFavoritesOnAppear = true
+            case .readingList:
+                selectedTab = "bookmarks"
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showingReadingList = true
+                }
             }
         }
         .sheet(isPresented: $showingAddBookmark) {

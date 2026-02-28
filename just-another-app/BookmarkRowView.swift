@@ -92,6 +92,7 @@ struct BookmarkRowView: View {
     var onDelete: () -> Void = {}
     var onEdit: (() -> Void)?
     var onOpenURL: ((URL) -> Void)?
+    var onAddToReadingList: (() -> Void)?
 
     @AppStorage("leadingSwipeAction") private var leadingSwipeRaw = SwipeAction.favorite.rawValue
     @AppStorage("trailingSwipeAction") private var trailingSwipeRaw = SwipeAction.delete.rawValue
@@ -145,6 +146,11 @@ struct BookmarkRowView: View {
                     bookmark.isFavorite ? "Unfavorite" : "Favorite",
                     systemImage: bookmark.isFavorite ? "star.slash" : "star.fill"
                 )
+            }
+            Button {
+                onAddToReadingList?()
+            } label: {
+                Label("Add to Reading List", systemImage: "text.book.closed")
             }
             Button {
                 UIPasteboard.general.string = bookmark.url

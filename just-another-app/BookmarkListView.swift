@@ -16,6 +16,7 @@ struct BookmarkListView: View {
     var onEdit: (Bookmark) -> Void = { _ in }
     var onDelete: (Bookmark) -> Void = { _ in }
     var onOpenURL: ((URL) -> Void)?
+    var onAddToReadingList: ((Bookmark) -> Void)?
 
     var body: some View {
         List(selection: listState.isSelectMode ? $listState.selectedBookmarkIDs : nil) {
@@ -28,7 +29,8 @@ struct BookmarkListView: View {
                     },
                     onDelete: { onDelete(bookmark) },
                     onEdit: { onEdit(bookmark) },
-                    onOpenURL: onOpenURL
+                    onOpenURL: onOpenURL,
+                    onAddToReadingList: onAddToReadingList.map { cb in { cb(bookmark) } }
                 )
                 .tag(bookmark.persistentModelID)
                 .contentShape(Rectangle())
